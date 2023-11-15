@@ -1,4 +1,6 @@
 from typing import Final
 
-APP_NAME: Final[str] = "Культура"
-DATABASE_URL: Final[str] = "sqlite:///db.sqlite3"
+from decouple import config
+
+APP_NAME: Final[str] = config("APP_NAME")
+DATABASE_URL: Final[str] = config("DATABASE_URL", default="sqlite:///db.sqlite3")
