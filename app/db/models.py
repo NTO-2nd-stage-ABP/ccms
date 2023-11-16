@@ -23,14 +23,13 @@ class Section(Enum):
     ENTERTAINMENT = 3
 
 
-class Type(BaseModel, table=True):
+class EventType(BaseModel, table=True):
     """
     Represents the type of an event.
     """
 
     name: str
-    section: Section
-    
+
     events: List["Event"] = Relationship(back_populates="type")
 
 
@@ -42,5 +41,7 @@ class Event(BaseModel, table=True):
     date: datetime
     description: Optional[str] = None
 
-    type_id: Optional[int] = Field(default=None, foreign_key="type.id")
-    type: Type = Relationship(back_populates="events")
+    type_id: Optional[int] = Field(default=None, foreign_key="eventtype.id")
+    type: EventType = Relationship(back_populates="event")
+
+    section: Section

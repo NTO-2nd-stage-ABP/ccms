@@ -1,3 +1,4 @@
+from PyQt6 import uic
 from PyQt6.QtWidgets import QMainWindow
 
 
@@ -11,5 +12,5 @@ class MainWindow(QMainWindow):
         Initialize the Main-Window.
         """
         super().__init__()
-
-        self.resize(800, 600)
+        uic.loadUi('app/ui/main_widget.ui', self)
+        # self.resize(800, 600)
