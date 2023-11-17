@@ -42,6 +42,6 @@ class Event(BaseModel, table=True):
     description: Optional[str] = None
 
     type_id: Optional[int] = Field(default=None, foreign_key="eventtype.id")
-    type: EventType = Relationship(back_populates="event")
+    type: EventType = Relationship(back_populates="events")
 
     section: Section
