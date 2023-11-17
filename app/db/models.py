@@ -18,9 +18,9 @@ class Section(Enum):
     Represents a section to categorize events.
     """
 
-    EDUCATION = 1
-    ENLIGHTMENT = 2
-    ENTERTAINMENT = 3
+    ENTERTAINMENT = 1
+    ENLIGHTENMENT = 2
+    EDUCATION = 3
 
 
 class EventType(BaseModel, table=True):
