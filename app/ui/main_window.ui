@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>813</width>
-    <height>603</height>
+    <width>800</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,18 +31,18 @@
         <item>
          <widget class="QTabWidget" name="tabWidget">
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <property name="tabsClosable">
            <bool>false</bool>
           </property>
           <widget class="QWidget" name="tab_3">
            <attribute name="title">
-            <string>Образование</string>
+            <string>Развлечения</string>
            </attribute>
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
-             <widget class="QTableView" name="tableView">
+             <widget class="QTableView" name="entertainmentTable">
               <property name="sortingEnabled">
                <bool>true</bool>
               </property>
@@ -52,11 +52,11 @@
           </widget>
           <widget class="QWidget" name="tab_4">
            <attribute name="title">
-            <string>Просвящение</string>
+            <string>Просвещение</string>
            </attribute>
            <layout class="QHBoxLayout" name="horizontalLayout_6">
             <item>
-             <widget class="QTableView" name="tableView_2">
+             <widget class="QTableView" name="Education">
               <property name="sortingEnabled">
                <bool>true</bool>
               </property>
@@ -66,7 +66,7 @@
           </widget>
           <widget class="QWidget" name="tab_5">
            <attribute name="title">
-            <string>Развлечения</string>
+            <string>Образование</string>
            </attribute>
            <layout class="QHBoxLayout" name="horizontalLayout_7">
             <item>
@@ -84,7 +84,7 @@
       </widget>
       <widget class="QWidget" name="tab_8">
        <attribute name="title">
-        <string>Виды Мероприятий</string>
+        <string>Виды мероприятий</string>
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout_8">
         <item>
@@ -110,8 +110,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>813</width>
-     <height>21</height>
+     <width>800</width>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -164,7 +164,7 @@
   <action name="undo">
    <property name="icon">
     <iconset>
-     <normaloff>resourses/undo.png</normaloff>../resourses/undo.png</iconset>
+     <normaloff>resourses/undo.png</normaloff>resourses/undo.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Отменить</string>
@@ -176,7 +176,7 @@
   <action name="redo">
    <property name="icon">
     <iconset>
-     <normaloff>resourses/redo.png</normaloff>../resourses/redo.png</iconset>
+     <normaloff>resourses/redo.png</normaloff>resourses/redo.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Вернуть</string>
@@ -188,7 +188,7 @@
   <action name="edit">
    <property name="icon">
     <iconset>
-     <normaloff>resourses/edit.png</normaloff>../resourses/edit.png</iconset>
+     <normaloff>resourses/edit.png</normaloff>resourses/edit.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Изменить</string>
@@ -200,7 +200,7 @@
   <action name="remove">
    <property name="icon">
     <iconset>
-     <normaloff>resourses/delete.png</normaloff>../resourses/delete.png</iconset>
+     <normaloff>resourses/delete.png</normaloff>resourses/delete.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Удалить</string>
@@ -212,7 +212,7 @@
   <action name="create">
    <property name="icon">
     <iconset>
-     <normaloff>resourses/create.png</normaloff>../resourses/create.png</iconset>
+     <normaloff>resourses/create.png</normaloff>resourses/create.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Создать</string>
