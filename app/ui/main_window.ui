@@ -14,132 +14,98 @@
    <string>Система управления культурным центром</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QFormLayout" name="formLayout">
-    <item row="0" column="0" colspan="2">
-     <widget class="QTabWidget" name="tabWidget_2">
-      <property name="tabPosition">
-       <enum>QTabWidget::North</enum>
-      </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_3">
+    <item>
+     <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
-      <widget class="QWidget" name="tab_7">
+      <widget class="QWidget" name="tab_3">
        <attribute name="title">
-        <string>Пространства</string>
+        <string>Развлечения</string>
        </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QTabWidget" name="tabWidget">
-          <property name="currentIndex">
-           <number>0</number>
+         <widget class="QTableView" name="tableView">
+          <property name="sortingEnabled">
+           <bool>true</bool>
           </property>
-          <property name="tabsClosable">
-           <bool>false</bool>
-          </property>
-          <widget class="QWidget" name="tab_3">
-           <attribute name="title">
-            <string>Развлечения</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_4">
-            <item>
-             <widget class="QTableView" name="entertainmentTable">
-              <property name="sortingEnabled">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_4">
-           <attribute name="title">
-            <string>Просвещение</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_6">
-            <item>
-             <widget class="QTableView" name="Education">
-              <property name="sortingEnabled">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_5">
-           <attribute name="title">
-            <string>Образование</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_7">
-            <item>
-             <widget class="QTableView" name="tableView_3">
-              <property name="sortingEnabled">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
+          <attribute name="horizontalHeaderStretchLastSection">
+           <bool>true</bool>
+          </attribute>
+          <attribute name="verticalHeaderStretchLastSection">
+           <bool>true</bool>
+          </attribute>
          </widget>
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_8">
+      <widget class="QWidget" name="tab_4">
        <attribute name="title">
-        <string>Виды мероприятий</string>
+        <string>Просвящение</string>
        </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout_8">
+       <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <widget class="QTableView" name="tableView_4">
+         <widget class="QTableView" name="tableView_2">
           <property name="sortingEnabled">
            <bool>true</bool>
           </property>
+          <attribute name="horizontalHeaderStretchLastSection">
+           <bool>true</bool>
+          </attribute>
+          <attribute name="verticalHeaderStretchLastSection">
+           <bool>true</bool>
+          </attribute>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_5">
+       <attribute name="title">
+        <string>Образование</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QTableView" name="tableView_3">
+          <property name="sortingEnabled">
+           <bool>true</bool>
+          </property>
+          <attribute name="horizontalHeaderStretchLastSection">
+           <bool>true</bool>
+          </attribute>
+          <attribute name="verticalHeaderStretchLastSection">
+           <bool>true</bool>
+          </attribute>
          </widget>
         </item>
        </layout>
       </widget>
      </widget>
     </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_4"/>
+    </item>
    </layout>
   </widget>
-  <widget class="QStatusBar" name="statusbar">
-   <property name="sizeGripEnabled">
-    <bool>false</bool>
-   </property>
-  </widget>
-  <widget class="QMenuBar" name="menuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>800</width>
-     <height>24</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="menu">
-    <property name="title">
-     <string>&amp;Правка</string>
-    </property>
-    <addaction name="undo"/>
-    <addaction name="redo"/>
-    <addaction name="separator"/>
-    <addaction name="create"/>
-    <addaction name="edit"/>
-    <addaction name="separator"/>
-    <addaction name="remove"/>
-   </widget>
-   <addaction name="menu"/>
-  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="windowTitle">
-    <string>Панель инструментов</string>
+    <string>toolBar</string>
    </property>
    <property name="movable">
     <bool>false</bool>
    </property>
    <property name="allowedAreas">
-    <set>Qt::LeftToolBarArea</set>
+    <set>Qt::TopToolBarArea</set>
    </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
+   <property name="iconSize">
+    <size>
+     <width>24</width>
+     <height>24</height>
+    </size>
    </property>
    <property name="toolButtonStyle">
     <enum>Qt::ToolButtonTextUnderIcon</enum>
@@ -153,39 +119,17 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="undo"/>
-   <addaction name="redo"/>
+   <addaction name="create_action"/>
    <addaction name="separator"/>
-   <addaction name="create"/>
-   <addaction name="edit"/>
+   <addaction name="edit_action"/>
+   <addaction name="delete_action"/>
    <addaction name="separator"/>
-   <addaction name="remove"/>
+   <addaction name="events_type_manager_action"/>
   </widget>
-  <action name="undo">
-   <property name="icon">
-    <iconset>
-     <normaloff>resourses/undo.png</normaloff>resourses/undo.png</iconset>
+  <action name="edit_action">
+   <property name="enabled">
+    <bool>false</bool>
    </property>
-   <property name="text">
-    <string>&amp;Отменить</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Z</string>
-   </property>
-  </action>
-  <action name="redo">
-   <property name="icon">
-    <iconset>
-     <normaloff>resourses/redo.png</normaloff>resourses/redo.png</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;Вернуть</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Y</string>
-   </property>
-  </action>
-  <action name="edit">
    <property name="icon">
     <iconset>
      <normaloff>resourses/edit.png</normaloff>resourses/edit.png</iconset>
@@ -197,7 +141,10 @@
     <string>F2</string>
    </property>
   </action>
-  <action name="remove">
+  <action name="delete_action">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset>
      <normaloff>resourses/delete.png</normaloff>resourses/delete.png</iconset>
@@ -209,7 +156,7 @@
     <string>Del</string>
    </property>
   </action>
-  <action name="create">
+  <action name="create_action">
    <property name="icon">
     <iconset>
      <normaloff>resourses/create.png</normaloff>resourses/create.png</iconset>
@@ -221,32 +168,21 @@
     <string>Ctrl+N</string>
    </property>
   </action>
-  <action name="action_5">
+  <action name="events_type_manager_action">
+   <property name="icon">
+    <iconset>
+     <normaloff>resourses/categorize.png</normaloff>resourses/categorize.png</iconset>
+   </property>
    <property name="text">
-    <string>Панель и&amp;нструментов</string>
+    <string>Управление видами</string>
+   </property>
+   <property name="toolTip">
+    <string>Управление видами</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+B</string>
+    <string>Ctrl+T</string>
    </property>
   </action>
  </widget>
- <resources/>
- <connections>
-  <connection>
-   <sender>action_5</sender>
-   <signal>triggered(bool)</signal>
-   <receiver>toolBar</receiver>
-   <slot>setVisible(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>406</x>
-     <y>48</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>
