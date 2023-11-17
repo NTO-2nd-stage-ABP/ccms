@@ -12,5 +12,5 @@ class MainWindow(QMainWindow):
         Initialize the Main-Window.
         """
         super().__init__()
-        uic.loadUi('app/ui/main_widget.ui', self)
+        uic.loadUi('app/ui/main_window.ui', self)
         # self.resize(800, 600)

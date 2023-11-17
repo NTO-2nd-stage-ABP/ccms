@@ -21,7 +21,7 @@
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab_7">
        <attribute name="title">
@@ -111,7 +111,7 @@
      <x>0</x>
      <y>0</y>
      <width>813</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -163,8 +163,8 @@
   </widget>
   <action name="undo">
    <property name="icon">
-    <iconset resource="../../resourses/icons.qrc">
-     <normaloff>:/interface/undo.png</normaloff>:/interface/undo.png</iconset>
+    <iconset>
+     <normaloff>../resourses/undo.png</normaloff>../resourses/undo.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Отменить</string>
@@ -175,8 +175,8 @@
   </action>
   <action name="redo">
    <property name="icon">
-    <iconset resource="../../resourses/icons.qrc">
-     <normaloff>:/interface/redo.png</normaloff>:/interface/redo.png</iconset>
+    <iconset>
+     <normaloff>../resourses/redo.png</normaloff>../resourses/redo.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Вернуть</string>
@@ -187,8 +187,8 @@
   </action>
   <action name="edit">
    <property name="icon">
-    <iconset resource="../../resourses/icons.qrc">
-     <normaloff>:/interface/edit.png</normaloff>:/interface/edit.png</iconset>
+    <iconset>
+     <normaloff>../resourses/edit.png</normaloff>../resourses/edit.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Изменить</string>
@@ -199,8 +199,8 @@
   </action>
   <action name="remove">
    <property name="icon">
-    <iconset resource="../../resourses/icons.qrc">
-     <normaloff>:/interface/delete.png</normaloff>:/interface/delete.png</iconset>
+    <iconset>
+     <normaloff>../resourses/delete.png</normaloff>../resourses/delete.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Удалить</string>
@@ -211,8 +211,8 @@
   </action>
   <action name="create">
    <property name="icon">
-    <iconset resource="../../resourses/icons.qrc">
-     <normaloff>:/interface/create.png</normaloff>:/interface/create.png</iconset>
+    <iconset>
+     <normaloff>../resourses/create.png</normaloff>../resourses/create.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Создать</string>
@@ -230,9 +230,7 @@
    </property>
   </action>
  </widget>
- <resources>
-  <include location="../../resourses/icons.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>action_5</sender>
