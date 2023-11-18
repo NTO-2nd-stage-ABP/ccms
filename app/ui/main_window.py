@@ -1,12 +1,8 @@
 from PyQt6 import uic
-from PyQt6.QtGui import QStandardItemModel, QStandardItem
-from PyQt6.QtSql import QSqlDatabase, QSqlTableModel
-from PyQt6.QtWidgets import QMainWindow
-from sqlmodel import Session, select
+from PyQt6.QtWidgets import QMainWindow, QTableView, QAbstractItemView
 
-from app.db import ENGINE
-from app.db.models import Event, EventType
 from app.ui.dialogs import TypeManagerDialog, CreateActionDialog
+from app.utils.views import EventsTableModel
 
 
 class MainWindow(QMainWindow):
@@ -20,56 +16,33 @@ class MainWindow(QMainWindow):
         """
         super().__init__()
         uic.loadUi("app/ui/main_window.ui", self)
-        self.create_tables()
+        self.refreshTables()
         self.statusbar.showMessage("Выберите элемент")
         self.create_action.triggered.connect(self.onCreateActionTriggered)
         self.events_type_manager_action.triggered.connect(self.onEventsTypeManagerActionTriggered)
+        self.delete_action.triggered.connect(self.deleteEvent)
+        
+        self.entertainmentView.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
+        self.entertainmentView.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        
+        self.enlightenmentView.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
+        self.enlightenmentView.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
 
-    def create_tables(self):
-        self.create_table_ENTERTAINMENT()
-        self.create_table_ENLIGHTENMENT()
+    def refreshTables(self):
+        self.model = EventsTableModel()
+        self.entertainmentView.setModel(self.model)
+        self.enlightenmentView.setModel(self.model)
 
-
-    def create_table_ENTERTAINMENT(self):
-        with Session(ENGINE) as session:
-            events = session.exec(select(Event).where(Event.section == 'ENTERTAINMENT')).all()
-        model = QStandardItemModel(len(events), 5)
-        model.setHorizontalHeaderLabels(["id", 'Название', "Дата", "Описание", "Тип мероприятия"])
-
-        for row in range(len(events)):
-            model.setItem(row, 0, QStandardItem(str(events[row].id)))
-            model.setItem(row, 1, QStandardItem(events[row].name))
-            model.setItem(row, 2, QStandardItem(events[row].date.strftime("%B %d, %Y. %H:%M")))
-            model.setItem(row, 3, QStandardItem(events[row].description))
-            with Session(ENGINE) as session:
-                type = session.exec(select(EventType.name).where(EventType.id == events[row].type_id)).first()
-            model.setItem(row, 4, QStandardItem(type))
-
-        self.entertainmentView.setModel(model)
-
-
-    def create_table_ENLIGHTENMENT(self):
-        with Session(ENGINE) as session:
-            events = session.exec(select(Event).where(Event.section == 'ENLIGHTENMENT')).all()
-        model = QStandardItemModel(len(events), 5)
-        model.setHorizontalHeaderLabels(["id", 'Название', "Дата", "Описание", "Тип мероприятия"])
-
-        for row in range(len(events)):
-            model.setItem(row, 0, QStandardItem(str(events[row].id)))
-            model.setItem(row, 1, QStandardItem(events[row].name))
-            model.setItem(row, 2, QStandardItem(events[row].date.strftime("%B %d, %Y. %H:%M")))
-            model.setItem(row, 3, QStandardItem(events[row].description))
-            with Session(ENGINE) as session:
-                type = session.exec(select(EventType.name).where(EventType.id == events[row].type_id)).first()
-            model.setItem(row, 4, QStandardItem(type))
-
-        self.enlightenmentView.setModel(model)
+    def deleteEvent(self):
+        if not self.entertainmentView.selectedIndexes() and not self.enlightenmentView.selectedIndexes():
+            return
+        self.model.removeRow(self.entertainmentView.selectedIndexes()[0].row())
 
     def onEventsTypeManagerActionTriggered(self):
-            dlg = TypeManagerDialog()
-            dlg.exec()
+        dlg = TypeManagerDialog()
+        dlg.exec()
 
     def onCreateActionTriggered(self):
         dlg = CreateActionDialog(self.tabWidget.currentIndex())
         dlg.exec()
-        self.create_tables()
+        self.refreshTables()

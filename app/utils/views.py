@@ -1,13 +1,83 @@
 from typing import Any
 
-from PyQt6.QtCore import QObject, Qt, QAbstractListModel, QModelIndex
+from PyQt6.QtCore import (
+    QObject,
+    Qt,
+    QAbstractListModel,
+    QAbstractTableModel,
+    QModelIndex,
+)
 from PyQt6.QtWidgets import QMessageBox
 from sqlalchemy import func
 
 from sqlmodel import Session, select
 
 from app.db import ENGINE
-from app.db.models import EventType
+from app.db.models import EventType, Event
+
+
+class EventsTableModel(QAbstractTableModel):
+    def __init__(self, parent: QObject | None = None) -> None:
+        super().__init__(parent)
+        with Session(ENGINE) as session:
+            self.__data = session.exec(select(Event)).all()
+        self.__headers = ("Заголовок", "Дата", "Тип", "Описание")
+
+    def headerData(
+        self, section: int, orientation: Qt.Orientation, role: int = ...
+    ) -> Any:
+        if (
+            orientation == Qt.Orientation.Horizontal
+            and role == Qt.ItemDataRole.DisplayRole
+        ):
+            return self.__headers[section]
+        return super().headerData(section, orientation, role)
+    
+    def data(self, index: QModelIndex, role: int = ...) -> Any:
+        if role == Qt.ItemDataRole.DisplayRole:
+            event = self.__data[index.row()]
+            match index.column():
+                case 0:
+                    return event.name
+                case 1:
+                    return event.date.strftime("%d.%M.%Y %H:%M")
+                case 2:
+                    with Session(ENGINE) as session:
+                        type = session.exec(select(EventType.name).where(EventType.id == event.type_id)).first()
+                    return type
+                case 3:
+                    return event.description
+    
+    def removeRows(self, row: int, count: int, parent: QModelIndex = QModelIndex()) -> bool:
+        if self.showConfirmationWarning() != QMessageBox.StandardButton.Ok:
+            return False
+        
+        self.beginRemoveRows(parent, row, row + count - 1)
+        with Session(ENGINE) as session:
+            for i in range(count):
+                eventType = session.get(Event, self.__data[row + i].id)
+                session.delete(eventType)
+                del self.__data[row : row + count]
+            session.commit()
+        self.endRemoveRows()
+        return True
+    
+    def rowCount(self, _: QModelIndex = ...) -> int:
+        return len(self.__data)
+    
+    def columnCount(self, _: QModelIndex = ...) -> int:
+        return len(self.__headers)
+
+    def flags(self, _: QModelIndex) -> Qt.ItemFlag:
+        return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
+    
+    def showConfirmationWarning(self):
+        return QMessageBox.warning(
+            self.parent(),
+            "Удаление объекта",
+            "Вы действительно хотите удалить этот объект?",
+            defaultButton=QMessageBox.StandardButton.Cancel,
+        )
 
 
 class EventTypesListModel(QAbstractListModel):
