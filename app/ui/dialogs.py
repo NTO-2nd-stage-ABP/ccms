@@ -1,4 +1,5 @@
 from PyQt6 import uic
+from PyQt6.QtCore import QDateTime
 from PyQt6.QtWidgets import QDialog
 from sqlmodel import Session, select
 
@@ -30,14 +31,15 @@ class CreateActionDialog(QDialog):
     def __init__(self, space):
         super().__init__()
         uic.loadUi("app/ui/dialogs/event_edit.ui", self)
+        
+        self.dateTimeEdit.setDateTime(QDateTime.currentDateTime())
 
         with Session(ENGINE) as session:
             eventTypes = session.exec(select(EventType)).all()
 
         self.comboBox.addItems([i.name for i in eventTypes])
-        self.space = space
-        self.buttonBox.accepted.connect(self.accept)
-
+        self.section_id = space
+                
     def accept(self) -> None:
         title = self.lineEdit.text()
         type = self.comboBox.currentText()
@@ -45,11 +47,10 @@ class CreateActionDialog(QDialog):
         description = self.textEdit.toPlainText()
 
         with Session(ENGINE) as session:
-            type_id = session.exec(select(EventType).where(EventType.name == type)).one().id
-            newEvent = Event(name=title, date=date, description=description, type_id=type_id, section=self.space + 1)
+            type_id = session.exec(select(EventType).where(EventType.name == type)).first().id
+            newEvent = Event(name=title, date=date, description=description, type_id=type_id, section=self.section_id + 1)
             session.add(newEvent)
             session.commit()
-
-
-    # def onAddButtonClicked(self) -> None:
-    #     self.listViewModel.insertRow(-1)
+            
+        return super().accept()
+                
