@@ -1,5 +1,5 @@
 from PyQt6 import uic
-from PyQt6.QtWidgets import QDialog
+from PyQt6.QtWidgets import QDialog, QMessageBox
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 
@@ -44,8 +44,23 @@ class TypeManagerDialog(QDialog):
 
     def onDataChanged(self, index):
         with Session(ENGINE) as session:
+            newName = index.data(Qt.ItemDataRole.DisplayRole)
             eventType = session.get(EventType, index.row() + 1)
-            eventType.name = index.data(Qt.ItemDataRole.DisplayRole)
+
+            if session.query(
+                select(EventType).where(EventType.name == newName).exists()
+            ).scalar():
+                QMessageBox.critical(
+                    self,
+                    "Вид мероприятия с таким названием уже существует!",
+                    "Введите другое название.",
+                )
+                self.model.blockSignals(True)
+                self.model.setData(index, eventType.name, Qt.ItemDataRole.DisplayRole)
+                self.model.blockSignals(False)
+                return
+
+            eventType.name = newName
             session.add(eventType)
             session.commit()
 
