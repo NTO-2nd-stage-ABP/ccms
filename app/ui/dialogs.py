@@ -28,7 +28,7 @@ class TypeManagerDialog(QDialog):
 
 
 class CreateActionDialog(QDialog):
-    def __init__(self, space):
+    def __init__(self, section_id):
         super().__init__()
         uic.loadUi("app/ui/dialogs/event_edit.ui", self)
         
@@ -38,7 +38,7 @@ class CreateActionDialog(QDialog):
             eventTypeNames = session.exec(select(EventType.name)).all()
 
         self.comboBox.addItems(eventTypeName for eventTypeName in eventTypeNames)
-        self.section_id = space
+        self.section_id = section_id
                 
     def accept(self) -> None:
         title = self.lineEdit.text()
@@ -52,7 +52,7 @@ class CreateActionDialog(QDialog):
         description = self.textEdit.toPlainText()
 
         with Session(ENGINE) as session:
-            type_id = session.exec(select(EventType).where(EventType.name == type)).first().id
+            type_id = session.exec(select(EventType.id).where(EventType.name == type)).first()
             newEvent = Event(name=title, date=date, description=description, type_id=type_id, section=self.section_id + 1)
             session.add(newEvent)
             session.commit()
