@@ -30,7 +30,11 @@ class EventTypesListModel(QAbstractListModel):
         with Session(ENGINE) as session:
             for _ in range(count):
                 maxId = session.query(func.max(EventType.id)).scalar()
-                newEventType = EventType(name=f"Вид {maxId or ''}")
+                name = f"Вид {maxId or ''}"
+                if self.eventTypeNameExists(name):
+                    self.showUniqueNameWarning(name)
+                    return False
+                newEventType = EventType(name=name)
                 session.add(newEventType)
                 session.commit()
                 session.refresh(newEventType)
