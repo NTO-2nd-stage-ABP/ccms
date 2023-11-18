@@ -28,7 +28,7 @@ class EventType(BaseModel, table=True):
     Represents the type of an event.
     """
 
-    name: str = Field(default=None, max_length=256)
+    name: str = Field(default=None, max_length=256, unique=True)
 
     events: List["Event"] = Relationship(back_populates="type")
 
