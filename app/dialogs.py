@@ -14,6 +14,7 @@ class TypeManagerDialog(QDialog):
         super().__init__()
         uic.loadUi("app/ui/dialogs/events_type_manager.ui", self)
 
+        self.eventTypeIds = {}
         self.model = QStandardItemModel()
         self.listView.setModel(self.model)
 
@@ -21,6 +22,7 @@ class TypeManagerDialog(QDialog):
             eventTypes = session.exec(select(EventType)).all()
 
         for eventType in eventTypes:
+            self.eventTypeIds[self.model.rowCount()] = eventType.id
             self.addEventTypeToListView(eventType)
 
         self.model.dataChanged.connect(self.onDataChanged)
@@ -29,23 +31,41 @@ class TypeManagerDialog(QDialog):
 
     def onAddButtonClicked(self):
         with Session(ENGINE) as session:
-            newEventType = EventType(name=f"Вид {self.model.rowCount() + 1}")
+            latestEventType = session.exec(
+                select(EventType).order_by(EventType.id.desc()).limit(1)
+            ).first()
+            newEventType = EventType(name=f"Вид {1 if latestEventType == None else latestEventType.id + 1}")
             self.addEventTypeToListView(newEventType)
             session.add(newEventType)
             session.commit()
+            self.eventTypeIds[self.model.rowCount() - 1] = newEventType.id
 
     def onDelButtonClicked(self):
+        currentRowIndex = self.listView.currentIndex().row()
+        
         with Session(ENGINE) as session:
-            currentRowIndex = self.listView.currentIndex().row()
-            eventType = session.get(EventType, currentRowIndex + 1)
+            print(self.eventTypeIds.keys())
+            print("pk", self.eventTypeIds[currentRowIndex])
+            eventType = session.get(EventType, self.eventTypeIds[currentRowIndex])
             session.delete(eventType)
             session.commit()
-            self.model.removeRow(currentRowIndex)
+
+        self.model.removeRow(currentRowIndex)
+        print(self.eventTypeIds.keys())
+        self.eventTypeIds.pop(currentRowIndex)
+        print(self.eventTypeIds.keys())
+        values = self.eventTypeIds.values()
+        self.eventTypeIds = {}
+        for i, value in enumerate(values):
+            print(i)
+            self.eventTypeIds[i] = value
+        print(self.eventTypeIds.keys())
 
     def onDataChanged(self, index):
         with Session(ENGINE) as session:
+            print(self.eventTypeIds.keys())
             newName = index.data(Qt.ItemDataRole.DisplayRole)
-            eventType = session.get(EventType, index.row() + 1)
+            eventType = session.get(EventType, self.eventTypeIds[index.row()])
 
             if session.query(
                 select(EventType).where(EventType.name == newName).exists()
