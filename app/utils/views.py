@@ -1,0 +1,86 @@
+from typing import Any, Sequence
+
+from PyQt6.QtCore import QObject, Qt, QAbstractListModel, QModelIndex
+from PyQt6.QtWidgets import QMessageBox
+from sqlalchemy import func
+
+from sqlmodel import Session, select
+
+from app.db import ENGINE
+from app.db.models import EventType
+
+
+class EventTypesListModel(QAbstractListModel):
+    def __init__(self, parent: QObject | None = None) -> None:
+        super().__init__(parent)
+        with Session(ENGINE) as session:
+            self.__data = session.exec(select(EventType)).all()
+
+    def rowCount(self, _: QModelIndex = ...) -> int:
+        return len(self.__data)
+
+    def data(self, index: QModelIndex, role: int = ...) -> Any:
+        if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
+            return self.__data[index.row()].name
+
+    def insertRows(
+        self, row: int, count: int, parent: QModelIndex = QModelIndex()
+    ) -> bool:
+        self.beginInsertRows(parent, row, row + count - 1)
+        with Session(ENGINE) as session:
+            for _ in range(count):
+                maxId = session.query(func.max(EventType.id)).scalar()
+                newEventType = EventType(name=f"Вид {maxId or ''}")
+                session.add(newEventType)
+                session.commit()
+                session.refresh(newEventType)
+                self.__data += [newEventType]
+        self.endInsertRows()
+        return True
+
+    def removeRows(
+        self, row: int, count: int, parent: QModelIndex = QModelIndex()
+    ) -> bool:
+        if not self.__data:
+            return False
+        self.beginRemoveRows(parent, row, row + count - 1)
+        with Session(ENGINE) as session:
+            for i in range(count):
+                eventType = session.get(EventType, self.__data[row + i].id)
+                session.delete(eventType)
+                del self.__data[row : row + count]
+            session.commit()
+        self.endRemoveRows()
+        return True
+
+    def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
+        if role == Qt.ItemDataRole.EditRole:
+            if self.eventTypeNameExists(value):
+                self.showUniqueNameWarning(value)
+                return False
+            self.__data[index.row()].name = value
+            with Session(ENGINE) as session:
+                eventType = session.get(EventType, self.__data[index.row()].id)
+                eventType.name = value
+                session.add(eventType)
+                session.commit()
+            self.dataChanged.emit(index, index)
+            return True
+
+    def flags(self, _: QModelIndex) -> Qt.ItemFlag:
+        return (
+            Qt.ItemFlag.ItemIsEditable
+            | Qt.ItemFlag.ItemIsEnabled
+            | Qt.ItemFlag.ItemIsSelectable
+        )
+
+    def eventTypeNameExists(self, name: str) -> bool:
+        with Session(ENGINE) as session:
+            return session.query(
+                select(EventType).filter_by(name=name).exists()
+            ).scalar()
+
+    def showUniqueNameWarning(self, name: str) -> None:
+        title = "Такой вид уже существует!"
+        text = f"Вид мероприятий с названием '{name}' уже был создан ранее."
+        QMessageBox.warning(self.parent(), title, text)

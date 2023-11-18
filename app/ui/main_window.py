@@ -1,7 +1,7 @@
 from PyQt6 import uic
 from PyQt6.QtWidgets import QMainWindow
 
-from app.dialogs import TypeManagerDialog, CreateActionDialog
+from app.ui.dialogs import TypeManagerDialog, CreateActionDialog
 
 
 class MainWindow(QMainWindow):
