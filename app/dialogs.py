@@ -29,7 +29,7 @@ class TypeManagerDialog(QDialog):
 
     def onAddButtonClicked(self):
         with Session(ENGINE) as session:
-            newEventType = EventType(name="Новый вид")
+            newEventType = EventType(name=f"Вид {self.model.rowCount() + 1}")
             self.addEventTypeToListView(newEventType)
             session.add(newEventType)
             session.commit()
