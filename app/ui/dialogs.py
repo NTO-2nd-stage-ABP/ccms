@@ -44,7 +44,7 @@ class CreateActionDialog(QDialog):
         title = self.lineEdit.text()
 
         if not title:
-            QMessageBox.warning(self, "Ошибка валидации.", "Название мероприятия не должно быть пустым.")
+            QMessageBox.warning(self, "Ошибка проверки", "Название мероприятия должно быть заполнено!")
             return
 
         date = self.dateTimeEdit.dateTime().toPyDateTime()

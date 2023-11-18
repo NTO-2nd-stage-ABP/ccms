@@ -64,7 +64,10 @@ class EventTypesListModel(QAbstractListModel):
 
     def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
         if role == Qt.ItemDataRole.EditRole:
-            if self.eventTypeNameExists(value) and self.__data[index.row()].name != value:
+            if (
+                self.eventTypeNameExists(value)
+                and self.__data[index.row()].name != value
+            ):
                 self.showUniqueNameWarning(value)
                 return False
             self.__data[index.row()].name = value
@@ -92,7 +95,7 @@ class EventTypesListModel(QAbstractListModel):
     def showUniqueNameWarning(self, name: str) -> None:
         QMessageBox.warning(
             self.parent(),
-            "Такой вид уже существует!",
+            "Предупреждение",
             f"Вид мероприятий с названием '{name}' уже был создан ранее.",
         )
 
