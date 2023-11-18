@@ -25,5 +25,5 @@ class MainWindow(QMainWindow):
         dlg.exec()
 
     def onCreateActionTriggered(self):
-        dlg = CreateActionDialog()
+        dlg = CreateActionDialog(self.tabWidget.currentIndex())
         dlg.exec()
