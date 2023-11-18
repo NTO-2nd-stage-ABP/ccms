@@ -47,12 +47,12 @@ class CreateActionDialog(QDialog):
             QMessageBox.warning(self, "Ошибка валидации.", "Название мероприятия не должно быть пустым.")
             return
 
-        type = self.comboBox.currentText()
         date = self.dateTimeEdit.dateTime().toPyDateTime()
         description = self.textEdit.toPlainText()
+        event_type_name = self.comboBox.currentText()
 
         with Session(ENGINE) as session:
-            type_id = session.exec(select(EventType.id).where(EventType.name == type)).first()
+            type_id = session.exec(select(EventType.id).where(EventType.name == event_type_name)).first()
             newEvent = Event(name=title, date=date, description=description, type_id=type_id, section=self.section_id + 1)
             session.add(newEvent)
             session.commit()
