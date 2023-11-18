@@ -1,6 +1,6 @@
 from PyQt6 import uic
 from PyQt6.QtCore import QDateTime
-from PyQt6.QtWidgets import QDialog
+from PyQt6.QtWidgets import QDialog, QMessageBox
 from sqlmodel import Session, select
 
 from app.db import ENGINE
@@ -42,6 +42,11 @@ class CreateActionDialog(QDialog):
                 
     def accept(self) -> None:
         title = self.lineEdit.text()
+
+        if not title:
+            QMessageBox.warning(self, "Ошибка валидации.", "Название мероприятия не должно быть пустым.")
+            return
+
         type = self.comboBox.currentText()
         date = self.dateTimeEdit.dateTime().toPyDateTime()
         description = self.textEdit.toPlainText()
