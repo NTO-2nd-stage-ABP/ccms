@@ -38,6 +38,7 @@ class Event(BaseModel, table=True):
     Represents an event registered on a specific date.
     """
 
+    name: str = Field(max_length=256)
     date: datetime
     description: Optional[str] = Field(default=None, max_length=1028)
 
