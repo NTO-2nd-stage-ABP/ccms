@@ -1,6 +1,8 @@
 from PyQt6 import uic
 from PyQt6.QtWidgets import QMainWindow
 
+from app.dialogs import TypeManagerDialog, CreateActionDialog
+
 
 class MainWindow(QMainWindow):
     """
@@ -19,7 +21,9 @@ class MainWindow(QMainWindow):
         self.events_type_manager_action.triggered.connect(self.onEventsTypeManagerActionTriggered)
 
     def onEventsTypeManagerActionTriggered(self):
-        uic.loadUi("app/ui/dialogs/events_type_manager.ui").exec()
+        dlg = TypeManagerDialog()
+        dlg.exec()
 
     def onCreateActionTriggered(self):
-        uic.loadUi("app/ui/dialogs/event_edit.ui").exec()
+        dlg = CreateActionDialog()
+        dlg.exec()
