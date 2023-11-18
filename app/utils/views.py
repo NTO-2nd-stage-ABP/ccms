@@ -1,4 +1,4 @@
-from typing import Any, Sequence
+from typing import Any
 
 from PyQt6.QtCore import QObject, Qt, QAbstractListModel, QModelIndex
 from PyQt6.QtWidgets import QMessageBox
