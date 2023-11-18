@@ -35,9 +35,9 @@ class CreateActionDialog(QDialog):
         self.dateTimeEdit.setDateTime(QDateTime.currentDateTime())
 
         with Session(ENGINE) as session:
-            eventTypes = session.exec(select(EventType)).all()
+            eventTypeNames = session.exec(select(EventType.name)).all()
 
-        self.comboBox.addItems([i.name for i in eventTypes])
+        self.comboBox.addItems(eventTypeName for eventTypeName in eventTypeNames)
         self.section_id = space
                 
     def accept(self) -> None:
