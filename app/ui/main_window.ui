@@ -17,8 +17,14 @@
    <layout class="QHBoxLayout" name="horizontalLayout_3">
     <item>
      <widget class="QTabWidget" name="tabWidget">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
       <property name="currentIndex">
        <number>0</number>
+      </property>
+      <property name="usesScrollButtons">
+       <bool>true</bool>
       </property>
       <widget class="QWidget" name="tab_3">
        <attribute name="title">
@@ -61,12 +67,18 @@
        </layout>
       </widget>
       <widget class="QWidget" name="tab_5">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <attribute name="title">
         <string>Образование</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <widget class="QTableView" name="educationView">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="sortingEnabled">
            <bool>true</bool>
           </property>
