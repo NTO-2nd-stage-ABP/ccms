@@ -42,7 +42,12 @@ class EventTypesListModel(QAbstractListModel):
         self, row: int, count: int, parent: QModelIndex = QModelIndex()
     ) -> bool:
         if not self.__data:
+            QMessageBox.warning(self.parent(), "Предупреждение", "Список видов пуст.")
             return False
+
+        if self.showConfirmationWarning() != QMessageBox.StandardButton.Ok:
+            return False
+
         self.beginRemoveRows(parent, row, row + count - 1)
         with Session(ENGINE) as session:
             for i in range(count):
@@ -81,6 +86,16 @@ class EventTypesListModel(QAbstractListModel):
             ).scalar()
 
     def showUniqueNameWarning(self, name: str) -> None:
-        title = "Такой вид уже существует!"
-        text = f"Вид мероприятий с названием '{name}' уже был создан ранее."
-        QMessageBox.warning(self.parent(), title, text)
+        QMessageBox.warning(
+            self.parent(),
+            "Такой вид уже существует!",
+            f"Вид мероприятий с названием '{name}' уже был создан ранее.",
+        )
+
+    def showConfirmationWarning(self):
+        return QMessageBox.warning(
+            self.parent(),
+            "Удаление объекта",
+            "Вы действительно хотите удалить этот объект?",
+            defaultButton=QMessageBox.StandardButton.Cancel,
+        )
