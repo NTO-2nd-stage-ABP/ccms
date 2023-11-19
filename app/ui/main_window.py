@@ -2,10 +2,11 @@ from PyQt6 import uic
 from PyQt6.QtWidgets import QMainWindow, QTableView, QAbstractItemView, QMessageBox
 
 from app.ui.dialogs import TypeManagerDialog, EditActionDialog, EditEventActionDialog
+from app.ui.main_window_ui import Ui_MainWindow
 from app.utils.views import EventsTableModel
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow, Ui_MainWindow):
     """
     Represents the Main-Window of this application.
     """
@@ -15,7 +16,8 @@ class MainWindow(QMainWindow):
         Initialize the Main-Window.
         """
         super().__init__()
-        uic.loadUi("app/ui/main_window.ui", self)
+        # uic.loadUi("app/ui/main_window.ui", self)
+        self.setupUi(self)
         self.refreshTables()
         self.statusbar.showMessage("Выберите элемент")
         self.create_action.triggered.connect(self.onCreateActionTriggered)

@@ -5,13 +5,16 @@ from sqlmodel import Session, select
 
 from app.db import ENGINE
 from app.db.models import EventType, Event
+from app.ui.event_edit import UiDialogAddEvent
+from app.ui.events_type_manager import UiDialogEditType
 from app.utils.views import EventTypesListModel
 
 
-class TypeManagerDialog(QDialog):
+class TypeManagerDialog(QDialog, UiDialogEditType):
     def __init__(self) -> None:
         super().__init__()
-        uic.loadUi("app/ui/dialogs/events_type_manager.ui", self)
+        # uic.loadUi("app/ui/dialogs/events_type_manager.ui", self)
+        self.setupUi(self)
 
         self.listViewModel = EventTypesListModel(self)
         self.listView.setModel(self.listViewModel)
@@ -27,10 +30,11 @@ class TypeManagerDialog(QDialog):
         self.listViewModel.removeRow(currentRowIndex)
 
 
-class EditActionDialog(QDialog):
+class EditActionDialog(QDialog, UiDialogAddEvent):
     def __init__(self, section_id):
         super().__init__()
-        uic.loadUi("app/ui/dialogs/event_edit.ui", self)
+        # uic.loadUi("app/ui/dialogs/event_edit.ui", self)
+        self.setupUi(self)
 
         self.dateTimeEdit.setDateTime(QDateTime.currentDateTime())
 
@@ -70,10 +74,11 @@ class EditActionDialog(QDialog):
         return super().accept()
 
 
-class EditEventActionDialog(QDialog):
+class EditEventActionDialog(QDialog, UiDialogAddEvent):
     def __init__(self, event: Event):
         super().__init__()
-        uic.loadUi("app/ui/dialogs/event_edit.ui", self)
+        # uic.loadUi("app/ui/dialogs/event_edit.ui", self)
+        self.setupUi(self)
         self.setWindowTitle("Редактирование мероприятия")
 
         self.__event = event
