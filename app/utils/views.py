@@ -40,7 +40,7 @@ class EventsTableModel(QAbstractTableModel):
                 case 0:
                     return event.name
                 case 1:
-                    return event.date.strftime("%d.%M.%Y %H:%M")
+                    return event.date.strftime("%d.%m %Y. %H:%M")
                 case 2:
                     with Session(ENGINE) as session:
                         type = session.exec(select(EventType.name).where(EventType.id == event.type_id)).first()

@@ -1,5 +1,5 @@
 from PyQt6 import uic
-from PyQt6.QtWidgets import QMainWindow, QTableView, QAbstractItemView
+from PyQt6.QtWidgets import QMainWindow, QTableView, QAbstractItemView, QMessageBox
 
 from app.ui.dialogs import TypeManagerDialog, CreateActionDialog
 from app.utils.views import EventsTableModel
@@ -21,12 +21,15 @@ class MainWindow(QMainWindow):
         self.create_action.triggered.connect(self.onCreateActionTriggered)
         self.events_type_manager_action.triggered.connect(self.onEventsTypeManagerActionTriggered)
         self.delete_action.triggered.connect(self.deleteEvent)
+        self.edit_action.triggered.connect(self.editEvent)
         
         self.entertainmentView.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
         self.entertainmentView.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         
         self.enlightenmentView.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
         self.enlightenmentView.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+
+
 
     def refreshTables(self):
         self.model = EventsTableModel()
@@ -35,14 +38,34 @@ class MainWindow(QMainWindow):
 
     def deleteEvent(self):
         if not self.entertainmentView.selectedIndexes() and not self.enlightenmentView.selectedIndexes():
+            QMessageBox.warning(self, "Ошибка проверки", "Выберете строку таблицы для удаления мероприятия")
             return
-        self.model.removeRow(self.entertainmentView.selectedIndexes()[0].row())
+
+        if self.tabWidget.currentIndex() == 0:
+            self.model.removeRow(self.entertainmentView.selectedIndexes()[0].row())
+        else:
+            self.model.removeRow(self.enlightenmentView.selectedIndexes()[0].row())
+
+    def editEvent(self):
+        if not self.entertainmentView.selectedIndexes() and not self.enlightenmentView.selectedIndexes():
+            QMessageBox.warning(self, "Ошибка проверки", "Выберете строку таблицы для редактирования мероприятия")
+            return
+        if self.tabWidget.currentIndex() == 0:
+            ...
+            # self.model.removeRow(self.entertainmentView.selectedIndexes()[0].row())
+        else:
+            ...
+            # self.model.removeRow(self.enlightenmentView.selectedIndexes()[0].row())
 
     def onEventsTypeManagerActionTriggered(self):
         dlg = TypeManagerDialog()
         dlg.exec()
 
     def onCreateActionTriggered(self):
-        dlg = CreateActionDialog(self.tabWidget.currentIndex())
-        dlg.exec()
-        self.refreshTables()
+        if self.tabWidget.currentIndex() != 2:
+            dlg = CreateActionDialog(self.tabWidget.currentIndex())
+            dlg.exec()
+            self.refreshTables()
+        else:
+            QMessageBox.warning(self, "Ошибка", "Действия в этом разделе сейчас недоступны")
+            return
