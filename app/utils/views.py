@@ -20,7 +20,7 @@ class EventsTableModel(QAbstractTableModel):
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
         with Session(ENGINE) as session:
-            self.__data = session.exec(select(Event)).all()
+            self.ddata = session.exec(select(Event)).all()
         self.__headers = ("Заголовок", "Дата", "Тип", "Описание")
 
     def headerData(
@@ -35,12 +35,12 @@ class EventsTableModel(QAbstractTableModel):
     
     def data(self, index: QModelIndex, role: int = ...) -> Any:
         if role == Qt.ItemDataRole.DisplayRole:
-            event = self.__data[index.row()]
+            event = self.ddata[index.row()]
             match index.column():
                 case 0:
                     return event.name
                 case 1:
-                    return event.date.strftime("%d.%m %Y. %H:%M")
+                    return event.date.strftime("%d.%m.%Y %H:%M")
                 case 2:
                     with Session(ENGINE) as session:
                         type = session.exec(select(EventType.name).where(EventType.id == event.type_id)).first()
@@ -55,15 +55,15 @@ class EventsTableModel(QAbstractTableModel):
         self.beginRemoveRows(parent, row, row + count - 1)
         with Session(ENGINE) as session:
             for i in range(count):
-                eventType = session.get(Event, self.__data[row + i].id)
+                eventType = session.get(Event, self.ddata[row + i].id)
                 session.delete(eventType)
-                del self.__data[row : row + count]
+                del self.ddata[row : row + count]
             session.commit()
         self.endRemoveRows()
         return True
     
     def rowCount(self, _: QModelIndex = ...) -> int:
-        return len(self.__data)
+        return len(self.ddata)
     
     def columnCount(self, _: QModelIndex = ...) -> int:
         return len(self.__headers)

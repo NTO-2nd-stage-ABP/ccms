@@ -130,9 +130,6 @@
    <addaction name="events_type_manager_action"/>
   </widget>
   <action name="edit_action">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
    <property name="icon">
     <iconset>
      <normaloff>resourses/edit.png</normaloff>resourses/edit.png</iconset>
