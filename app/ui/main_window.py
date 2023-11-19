@@ -26,10 +26,15 @@ class MainWindow(QMainWindow):
         self.entertainmentView.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
         self.entertainmentView.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.entertainmentView.doubleClicked.connect(self.editEvent)
+        self.entertainmentView.selectionModel().selectionChanged.connect(self.removeStatusBarMessage)
         
         self.enlightenmentView.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
         self.enlightenmentView.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.enlightenmentView.doubleClicked.connect(self.editEvent)
+        self.enlightenmentView.selectionModel().selectionChanged.connect(self.removeStatusBarMessage)
+        
+    def removeStatusBarMessage(self):
+        self.statusbar.clearMessage()
 
     def refreshTables(self):
         self.model = EventsTableModel()
