@@ -80,6 +80,7 @@ class EditEventActionDialog(QDialog):
         self.lineEdit.setText(self.__event.name)
         self.textEdit.setPlainText(self.__event.description)
         self.dateTimeEdit.setDateTime(QDateTime(self.__event.date))
+        self.label_5.setText("Вы редактируете мероприятие в текущем пространстве.")
 
         with Session(ENGINE) as session:
             eventTypeNames = session.exec(select(EventType.name)).all()
