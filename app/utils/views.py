@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import QMessageBox
 from sqlmodel import Session, select
 
 from app.db import ENGINE
-from app.db.models import BaseSequence, EventType, Event
+from app.db.models import BaseNamedModel, EventType, Event
 
 TSequence = TypeVar("TSequence")
 class GenericListModel(Generic[TSequence], QAbstractListModel):

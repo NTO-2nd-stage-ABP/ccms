@@ -23,11 +23,11 @@ class BaseModel(SQLModel):
     id: Optional[int] = Field(default=None, primary_key=True)
 
 
-class BaseSequence(BaseModel):
+class BaseNamedModel(BaseModel):
     name: str = Field(nullable=False, unique=True, max_length=128, index=True)
 
 
-class EventType(BaseSequence, table=True):
+class EventType(BaseNamedModel, table=True):
     """
     Represents the type of an event.
     """
@@ -53,11 +53,11 @@ class Event(BaseModel, table=True):
     works: List["Work"] = Relationship(back_populates="event")
 
 
-class RoomType(BaseSequence, table=True):
+class RoomType(BaseNamedModel, table=True):
     works: List["Work"] = Relationship(back_populates="room")
 
 
-class WorkType(BaseSequence, table=True):
+class WorkType(BaseNamedModel, table=True):
     works: List["Work"] = Relationship(back_populates="type")
 
 
