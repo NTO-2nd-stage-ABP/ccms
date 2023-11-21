@@ -1,12 +1,13 @@
 from PyQt6 import uic
 from PyQt6.QtWidgets import QMainWindow, QTableView, QAbstractItemView, QMessageBox
 
-from app.ui.dialogs import TypeManagerDialog, EditActionDialog, EditEventActionDialog
+from app.ui.dialogs import GenericSequenceManagerDialog, EditActionDialog, EditEventActionDialog
 from app.ui.main_window_ui import Ui_MainWindow
 from app.utils.views import EventsTableModel
+from app.db.models import EventType, RoomType, WorkType
 
 
-class MainWindow(QMainWindow, Ui_MainWindow):
+class MainWindow(QMainWindow):
     """
     Represents the Main-Window of this application.
     """
@@ -16,12 +17,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Initialize the Main-Window.
         """
         super().__init__()
-        # uic.loadUi("app/ui/main_window.ui", self)
-        self.setupUi(self)
+        uic.loadUi("app/ui/main_window.ui", self)
+        
         self.refreshTables()
         self.statusbar.showMessage("Выберите элемент")
         self.create_action.triggered.connect(self.onCreateActionTriggered)
-        self.events_type_manager_action.triggered.connect(self.onEventsTypeManagerActionTriggered)
+        self.events_type_manager_action.triggered.connect(lambda: GenericSequenceManagerDialog(EventType, "Виды мероприятий:").exec())
+        self.action.triggered.connect(lambda: GenericSequenceManagerDialog(WorkType, "Виды работ:").exec())
+        self.action_2.triggered.connect(lambda: GenericSequenceManagerDialog(RoomType, "Помещения:").exec())
         self.delete_action.triggered.connect(self.deleteEvent)
         self.edit_action.triggered.connect(self.editEvent)
         
@@ -68,10 +71,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             index = self.enlightenmentView.selectedIndexes()[0].row()
         dlg = EditEventActionDialog(self.model.ddata[index])
-        dlg.exec()
-
-    def onEventsTypeManagerActionTriggered(self):
-        dlg = TypeManagerDialog()
         dlg.exec()
 
     def onCreateActionTriggered(self):

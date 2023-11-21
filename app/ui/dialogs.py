@@ -6,24 +6,35 @@ from sqlmodel import Session, select
 from app.db import ENGINE
 from app.db.models import EventType, Event
 from app.ui.event_edit import UiDialogAddEvent
-from app.ui.events_type_manager import UiDialogEditType
-from app.utils.views import EventTypesListModel
+from app.utils.views import GenericListModel
 
 
-class TypeManagerDialog(QDialog, UiDialogEditType):
-    def __init__(self) -> None:
+class GenericSequenceManagerDialog(QDialog):
+    def __init__(self, _type, header) -> None:
         super().__init__()
-        # uic.loadUi("app/ui/dialogs/events_type_manager.ui", self)
-        self.setupUi(self)
+        uic.loadUi("app/ui/dialogs/events_type_manager.ui", self)
+        
+        with Session(ENGINE) as session:
+            data = session.exec(select(_type)).all()
 
-        self.listViewModel = EventTypesListModel(self)
+        self.label_2.setText(header)
+        self.listViewModel = GenericListModel[_type](data, self)
         self.listView.setModel(self.listViewModel)
+
+        self.delButton.setDisabled(True)
+        self.listView.selectionModel().selectionChanged.connect(lambda: self.delButton.setDisabled(False))
 
         self.addButton.clicked.connect(self.onAddButtonClicked)
         self.delButton.clicked.connect(self.onDelButtonClicked)
 
     def onAddButtonClicked(self) -> None:
         self.listViewModel.insertRow(-1)
+        index = self.listViewModel.index(self.listViewModel.rowCount() - 1, 0)
+
+        # Access or modify the data in the index
+        # data = index.data()
+
+        self.listView.edit(index)
 
     def onDelButtonClicked(self) -> None:
         currentRowIndex = self.listView.currentIndex().row()

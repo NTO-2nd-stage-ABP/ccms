@@ -5,14 +5,6 @@ from typing import Optional, List
 from sqlmodel import SQLModel, Field, Relationship
 
 
-class BaseModel(SQLModel):
-    """
-    Represents the base for defining models.
-    """
-
-    id: Optional[int] = Field(default=None, primary_key=True)
-
-
 class Section(Enum):
     """
     Represents a section to categorize events.
@@ -23,12 +15,22 @@ class Section(Enum):
     EDUCATION = 3
 
 
-class EventType(BaseModel, table=True):
+class BaseModel(SQLModel):
+    """
+    Represents the base for defining models.
+    """
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+
+
+class BaseSequence(BaseModel):
+    name: str = Field(nullable=False, unique=True, max_length=128, index=True)
+
+
+class EventType(BaseSequence, table=True):
     """
     Represents the type of an event.
     """
-
-    name: str = Field(default=None, max_length=256, unique=True)
 
     events: List["Event"] = Relationship(back_populates="type")
 
@@ -46,3 +48,37 @@ class Event(BaseModel, table=True):
     type: EventType = Relationship(back_populates="events")
 
     section: Section
+    
+    works: List["Work"] = Relationship(back_populates="event")
+
+
+class RoomType(BaseSequence, table=True):
+    works: List["Work"] = Relationship(back_populates="room")
+
+
+class WorkType(BaseSequence, table=True):
+    works: List["Work"] = Relationship(back_populates="type")
+
+
+class WorkStatus(Enum):
+    DRAFT = 1
+    PROGRESS = 2
+    COMPLETED = 3
+
+
+class Work(BaseModel, table=True):
+    description: Optional[str] = Field(default=None, max_length=1028)
+    
+    event_id: Optional[int] = Field(default=None, foreign_key="event.id")
+    event: Event = Relationship(back_populates="works")
+    
+    type_id: Optional[int] = Field(default=None, foreign_key="worktype.id")
+    type: WorkType = Relationship(back_populates="works")
+    
+    room_id: Optional[int] = Field(default=None, foreign_key="roomtype.id")
+    room: RoomType = Relationship(back_populates="works")
+    
+    deadline: datetime = Field(nullable=False)
+    created_at: datetime = Field(nullable=False, default_factory=datetime.now)
+    
+    status: WorkStatus = Field(nullable=False)

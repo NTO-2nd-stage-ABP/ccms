@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Управление видами мероприятий</string>
+   <string>Управление разновидностями</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -27,7 +27,7 @@
    <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Виды мероприятий:</string>
+      <string>Виды:</string>
      </property>
     </widget>
    </item>
@@ -40,15 +40,27 @@
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
         <widget class="QPushButton" name="addButton">
+         <property name="toolTip">
+          <string>Добавить новый элемент в конец списка (Ctrl + N)</string>
+         </property>
          <property name="text">
-          <string>Добавить</string>
+          <string>&amp;Добавить</string>
+         </property>
+         <property name="shortcut">
+          <string>Ctrl+N</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="delButton">
+         <property name="toolTip">
+          <string>Удалить выбранный элемент (Del)</string>
+         </property>
          <property name="text">
-          <string>Удалить</string>
+          <string>&amp;Удалить</string>
+         </property>
+         <property name="shortcut">
+          <string>Del</string>
          </property>
         </widget>
        </item>

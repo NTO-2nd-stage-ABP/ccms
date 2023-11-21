@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Set, TypeVar, Generic
 
 from PyQt6.QtCore import (
     QObject,
@@ -8,12 +8,107 @@ from PyQt6.QtCore import (
     QModelIndex,
 )
 from PyQt6.QtWidgets import QMessageBox
-from sqlalchemy import func
 
 from sqlmodel import Session, select
 
 from app.db import ENGINE
-from app.db.models import EventType, Event
+from app.db.models import BaseSequence, EventType, Event
+
+TSequence = TypeVar("TSequence")
+class GenericListModel(Generic[TSequence], QAbstractListModel):
+    def __init__(self, data: Set[TSequence], parent: QObject | None = None) -> None:
+        super().__init__(parent)
+        self._data = data
+
+    def rowCount(self, _: QModelIndex = ...) -> int:
+        return len(self._data)
+
+    def data(self, index: QModelIndex, role: int = ...) -> Any:
+        if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
+            return self._data[index.row()].name
+
+    def insertRow(self, row: int, parent: QModelIndex = QModelIndex()) -> bool:
+        self.beginInsertRows(parent, row, row)
+        
+        name = f"Объект ({self.rowCount()})"
+
+        if self.isUniqueNameConstraintFailed(name):
+            self._showUniqueNameConstraintWarning(name)
+            return False
+
+        with Session(ENGINE) as session:
+            newObj: TSequence = self._getGenericType()(name=name)
+            session.add(newObj)
+            session.commit()
+            session.refresh(newObj)
+        
+        self._data.append(newObj)
+
+        self.endInsertRows()
+        return True
+    
+    def removeRow(self, row: int, parent: QModelIndex = QModelIndex()) -> bool:
+        self.beginRemoveRows(parent, row, row)
+
+        item = self._data[row]
+
+        if self._showObjectDeletionConfirmation(item.name) != QMessageBox.StandardButton.Ok:
+            return False
+
+        self._data.remove(item)
+
+        with Session(ENGINE) as session:
+            obj: TSequence = session.get(self._getGenericType(), item.id)
+            session.delete(obj)
+            session.commit()
+
+        self.endRemoveRows()
+        return True
+
+    def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
+        if role == Qt.ItemDataRole.EditRole:
+            return self.editData(index, value)
+    
+    def editData(self, index: QModelIndex, value: Any) -> bool:
+        item = self._data[index.row()]
+
+        if item.name == value:
+            return False
+
+        if self.isUniqueNameConstraintFailed(value):
+            self._showUniqueNameConstraintWarning(value)
+            return False
+
+        item.name = value
+
+        with Session(ENGINE) as session:
+            obj: TSequence = session.get(self._getGenericType(), item.id)
+            obj.name = value
+            session.add(obj)
+            session.commit()
+
+        self.dataChanged.emit(index, index)
+        return True
+
+    def flags(self, _: QModelIndex) -> Qt.ItemFlag:
+        return Qt.ItemFlag.ItemIsEditable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
+
+    def isUniqueNameConstraintFailed(self, name: str) -> bool:
+        return any(item.name == name for item in self._data)
+
+    def _showUniqueNameConstraintWarning(self, name: str) -> None:
+        QMessageBox.critical(self.parent(), "Ошибка", f"Объект названием '{name}' уже был создан ранее.")
+
+    def _showObjectDeletionConfirmation(self, name: str) -> bool:
+        return QMessageBox.warning(
+            self.parent(),
+            "Подтверждение удаления объекта",
+            f"Вы действительно хотите удалить '{name}'?",
+            defaultButton=QMessageBox.StandardButton.Close
+        )
+    
+    def _getGenericType(self) -> TSequence:
+        return self.__orig_class__.__args__[0]
 
 
 class EventsTableModel(QAbstractTableModel):
@@ -71,104 +166,6 @@ class EventsTableModel(QAbstractTableModel):
     def flags(self, _: QModelIndex) -> Qt.ItemFlag:
         return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
     
-    def showConfirmationWarning(self):
-        return QMessageBox.warning(
-            self.parent(),
-            "Удаление объекта",
-            "Вы действительно хотите удалить этот объект?",
-            defaultButton=QMessageBox.StandardButton.Cancel,
-        )
-
-
-class EventTypesListModel(QAbstractListModel):
-    def __init__(self, parent: QObject | None = None) -> None:
-        super().__init__(parent)
-        with Session(ENGINE) as session:
-            self.__data = session.exec(select(EventType)).all()
-
-    def rowCount(self, _: QModelIndex = ...) -> int:
-        return len(self.__data)
-
-    def data(self, index: QModelIndex, role: int = ...) -> Any:
-        if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
-            return self.__data[index.row()].name
-
-    def insertRows(
-        self, row: int, count: int, parent: QModelIndex = QModelIndex()
-    ) -> bool:
-        self.beginInsertRows(parent, row, row + count - 1)
-        with Session(ENGINE) as session:
-            for _ in range(count):
-                maxId = session.query(func.max(EventType.id)).scalar()
-                name = f"Вид {maxId or ''}"
-                if self.eventTypeNameExists(name):
-                    self.showUniqueNameWarning(name)
-                    return False
-                newEventType = EventType(name=name)
-                session.add(newEventType)
-                session.commit()
-                session.refresh(newEventType)
-                self.__data += [newEventType]
-        self.endInsertRows()
-        return True
-
-    def removeRows(
-        self, row: int, count: int, parent: QModelIndex = QModelIndex()
-    ) -> bool:
-        if not self.__data:
-            QMessageBox.warning(self.parent(), "Предупреждение", "Список видов пуст.")
-            return False
-
-        if self.showConfirmationWarning() != QMessageBox.StandardButton.Ok:
-            return False
-
-        self.beginRemoveRows(parent, row, row + count - 1)
-        with Session(ENGINE) as session:
-            for i in range(count):
-                eventType = session.get(EventType, self.__data[row + i].id)
-                session.delete(eventType)
-                del self.__data[row : row + count]
-            session.commit()
-        self.endRemoveRows()
-        return True
-
-    def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
-        if role == Qt.ItemDataRole.EditRole:
-            if (
-                self.eventTypeNameExists(value)
-                and self.__data[index.row()].name != value
-            ):
-                self.showUniqueNameWarning(value)
-                return False
-            self.__data[index.row()].name = value
-            with Session(ENGINE) as session:
-                eventType = session.get(EventType, self.__data[index.row()].id)
-                eventType.name = value
-                session.add(eventType)
-                session.commit()
-            self.dataChanged.emit(index, index)
-            return True
-
-    def flags(self, _: QModelIndex) -> Qt.ItemFlag:
-        return (
-            Qt.ItemFlag.ItemIsEditable
-            | Qt.ItemFlag.ItemIsEnabled
-            | Qt.ItemFlag.ItemIsSelectable
-        )
-
-    def eventTypeNameExists(self, name: str) -> bool:
-        with Session(ENGINE) as session:
-            return session.query(
-                select(EventType).filter_by(name=name).exists()
-            ).scalar()
-
-    def showUniqueNameWarning(self, name: str) -> None:
-        QMessageBox.warning(
-            self.parent(),
-            "Предупреждение",
-            f"Вид мероприятий с названием '{name}' уже был создан ранее.",
-        )
-
     def showConfirmationWarning(self):
         return QMessageBox.warning(
             self.parent(),
