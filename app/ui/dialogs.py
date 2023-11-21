@@ -105,7 +105,8 @@ class EditEventActionDialog(QDialog, UiDialogAddEvent):
         
         with Session(ENGINE) as session:
             eventType = session.get(EventType, self.__event.type_id)
-            self.comboBox.setCurrentIndex(eventTypeNames.index(eventType.name))
+            if eventType:
+                self.comboBox.setCurrentIndex(eventTypeNames.index(eventType.name))
 
     def accept(self) -> None:
         title = self.lineEdit.text()
