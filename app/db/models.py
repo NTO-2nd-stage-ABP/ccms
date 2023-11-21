@@ -42,6 +42,7 @@ class Event(BaseModel, table=True):
 
     name: str = Field(max_length=256)
     date: datetime
+    created_at: datetime = Field(nullable=False, default_factory=datetime.now)
     description: Optional[str] = Field(default=None, max_length=1028)
 
     type_id: Optional[int] = Field(default=None, foreign_key="eventtype.id")
