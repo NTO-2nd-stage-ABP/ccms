@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>620</height>
+    <height>623</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -429,31 +429,7 @@
              </font>
             </property>
             <property name="text">
-             <string>Ваши активные задачи на сегодня:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer_11">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_13">
-            <property name="text">
-             <string>&amp;Новая задача</string>
-            </property>
-            <property name="icon">
-             <iconset>
-              <normaloff>resourses/create.png</normaloff>resourses/create.png</iconset>
+             <string>Ваши активные задачи:</string>
             </property>
            </widget>
           </item>

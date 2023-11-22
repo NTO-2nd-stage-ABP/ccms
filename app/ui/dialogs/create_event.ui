@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>350</height>
+    <width>467</width>
+    <height>483</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Создание мероприятия</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
-   <item>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
     <widget class="QGroupBox" name="mainInformationGroupBox">
      <property name="title">
       <string>Главная информация</string>
@@ -67,7 +67,7 @@
      </layout>
     </widget>
    </item>
-   <item>
+   <item row="1" column="0">
     <widget class="QGroupBox" name="detailedInformationGroupBox">
      <property name="title">
       <string>Подробная информация</string>
@@ -124,37 +124,47 @@
      </layout>
     </widget>
    </item>
-   <item>
-    <spacer name="formVerticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
+   <item row="2" column="0">
+    <widget class="QGroupBox" name="statusGroupBox_2">
+     <property name="title">
+      <string>Пространство</string>
      </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item>
-    <widget class="QLabel" name="formHelpText">
-     <property name="text">
-      <string>Это мероприятие будет создано в текущем пространстве.</string>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
-     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_5">
+      <item>
+       <widget class="QRadioButton" name="entertainemtRadioButton">
+        <property name="text">
+         <string>Развлечения</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="enlightenmentRadioButton">
+        <property name="text">
+         <string>Просвещяние</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="educationRadioButton">
+        <property name="text">
+         <string>Образование</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
-   <item>
+   <item row="3" column="0">
     <widget class="Line" name="formDivider">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
     </widget>
    </item>
-   <item>
+   <item row="4" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>

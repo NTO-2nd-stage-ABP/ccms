@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QDialog, QMessageBox
 from sqlmodel import Session, select
 
 from app.db import ENGINE
-from app.db.models import EventType, Event
+from app.db.models import EventType, Event, WorkType, RoomType, Section, Work
 from app.ui.models import TypeListModel
 
 
@@ -43,7 +43,7 @@ class TypeManagerDialog(QDialog):
 
 
 class CreateEventDialog(QDialog):
-    def __init__(self, section_id):
+    def __init__(self):
         super().__init__()
         uic.loadUi("app/ui/dialogs/create_event.ui", self)
 
@@ -51,9 +51,10 @@ class CreateEventDialog(QDialog):
 
         with Session(ENGINE) as session:
             eventTypeNames = session.exec(select(EventType.name)).all()
+            roomTypeNames = session.exec(select(RoomType.name)).all()
 
         self.typeComboBox.addItems(eventTypeName for eventTypeName in eventTypeNames)
-        self.section_id = section_id
+        self.roomComboBox.addItems(eventTypeName for eventTypeName in roomTypeNames)
 
     def accept(self) -> None:
         title = self.titleLineEdit.text()
@@ -68,6 +69,16 @@ class CreateEventDialog(QDialog):
         description = self.descriptionTextEdit.toPlainText()
         event_type_name = self.typeComboBox.currentText()
 
+        if self.entertainemtRadioButton.isChecked():
+            section_id = 0
+        elif self.enlightenmentRadioButton.isChecked():
+            section_id = 1
+        else:
+            QMessageBox.warning(
+                self, "Ошибка валидации", "Создание мероприятий в этом пространстве временно недоступно"
+            )
+            return
+
         with Session(ENGINE) as session:
             type_id = session.exec(
                 select(EventType.id).where(EventType.name == event_type_name)
@@ -77,7 +88,7 @@ class CreateEventDialog(QDialog):
                 date=date,
                 description=description,
                 type_id=type_id,
-                section=self.section_id + 1,
+                section=section_id + 1,
             )
             session.add(newEvent)
             session.commit()
@@ -95,12 +106,20 @@ class EditEventDialog(QDialog):
         self.titleLineEdit.setText(self._event.name)
         self.descriptionTextEdit.setPlainText(self._event.description)
         self.dateDateTimeEdit.setDateTime(QDateTime(self._event.date))
-        self.formHelpText.setText("Вы редактируете мероприятие в текущем пространстве.")
+
+        if event.section == Section(2):
+            self.enlightenmentRadioButton.setChecked(True)
+        if event.section == Section(3):
+            self.educationRadioButton.setChecked(True)
+
+        # self.formHelpText.setText("Вы редактируете мероприятие в текущем пространстве.")
 
         with Session(ENGINE) as session:
             eventTypeNames = session.exec(select(EventType.name)).all()
+            roomTypeNames = session.exec(select(RoomType.name)).all()
 
         self.typeComboBox.addItems(eventTypeName for eventTypeName in eventTypeNames)
+        self.roomComboBox.addItems(eventTypeName for eventTypeName in roomTypeNames)
 
         with Session(ENGINE) as session:
             eventType = session.get(EventType, self._event.type_id)
@@ -120,6 +139,16 @@ class EditEventDialog(QDialog):
         description = self.descriptionTextEdit.toPlainText()
         event_type_name = self.typeComboBox.currentText()
 
+        if self.entertainemtRadioButton.isChecked():
+            section_id = 0
+        elif self.enlightenmentRadioButton.isChecked():
+            section_id = 1
+        else:
+            QMessageBox.warning(
+                self, "Ошибка валидации", "Создание мероприятий в этом пространстве временно недоступно"
+            )
+            return
+
         with Session(ENGINE) as session:
             type_id = session.exec(
                 select(EventType.id).where(EventType.name == event_type_name)
@@ -128,6 +157,7 @@ class EditEventDialog(QDialog):
             self._event.date = date
             self._event.description = description
             self._event.type_id = type_id
+            self._event.section = Section(section_id + 1)
 
             session.add(self._event)
             session.commit()
@@ -140,6 +170,52 @@ class CreateWorkDialog(QDialog):
     def __init__(self):
         super().__init__()
         uic.loadUi("app/ui/dialogs/create_work.ui", self)
+        self.dateDateTimeEdit.setDateTime(QDateTime.currentDateTime())
+
+        with Session(ENGINE) as session:
+            workTypeNames = session.exec(select(WorkType.name)).all()
+            roomTypeNames = session.exec(select(RoomType.name)).all()
+            eventNames = session.exec(select(Event.name)).all()
+
+
+        self.typeComboBox.addItems(eventTypeName for eventTypeName in workTypeNames)
+        self.roomComboBox.addItems(eventTypeName for eventTypeName in roomTypeNames)
+        self.eventComboBox.addItems(eventTypeName for eventTypeName in eventNames)
+
+    def accept(self) -> None:
+        date = self.dateDateTimeEdit.dateTime().toPyDateTime()
+        description = self.descriptionTextEdit.toPlainText()
+        work_type_name = self.typeComboBox.currentText()
+        room = self.roomComboBox.currentText()
+        event = self.eventComboBox.currentText()
+
+        if self.draftRadioButton.isChecked():
+            status = 1
+        elif self.enlightenmentRadioButton.isChecked():
+            status = 2
+        else:
+            status = 3
+
+        with Session(ENGINE) as session:
+            event_id = session.exec(select(EventType.id).where(EventType.name == event)).first()
+            type_id = session.exec(select(WorkType.id).where(WorkType.name == work_type_name)).first()
+            room_id = session.exec(select(RoomType.id).where(RoomType.name == room)).first()
+
+            newWork = Work(
+                description=description,
+                event_id=event_id,
+                type_id=type_id,
+                room_id=room_id,
+                deadline=date,
+                status=status,
+            )
+            session.add(newWork)
+            session.commit()
+
+        return super().accept()
+
+
+
 
 
 __all__ = ["TypeManagerDialog", "CreateEventDialog", "EditEventDialog", "CreateWorkDialog"]

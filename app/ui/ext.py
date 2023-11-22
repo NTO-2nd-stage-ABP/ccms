@@ -54,7 +54,7 @@ class MainWindow(QMainWindow):
         )
 
     def onNewEventPushButtonClicked(self):
-        dlg = CreateEventDialog(self.tabWidget.currentIndex())
+        dlg = CreateEventDialog()
         dlg.exec()
         self.refreshEventsTable()
 
