@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QApplication
 
 from app.db import ENGINE
 from app.db.models import BaseModel
-from app.ui.main_window import MainWindow
+from app.ui import MainWindow
 
 
 def run() -> int:
