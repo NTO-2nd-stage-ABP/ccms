@@ -1,5 +1,5 @@
 from PyQt6 import uic
-from PyQt6.QtWidgets import QMainWindow, QTableView, QAbstractItemView, QMessageBox
+from PyQt6.QtWidgets import QMainWindow, QTableView, QAbstractItemView, QMessageBox, QHeaderView
 
 from app.db.models import EventType, RoomType, WorkType
 from app.ui.models import EventTableModel
@@ -24,6 +24,7 @@ class MainWindow(QMainWindow):
         uic.loadUi("app/ui/main_window.ui", self)
 
         self.refreshEventsTable()
+        self.eventsTableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.newEventPushButton.clicked.connect(self.onNewEventPushButtonClicked)
         self.editSelectedEventsPushButton.clicked.connect(
             self.onEditSelectedEventsPushButtonClicked

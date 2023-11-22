@@ -18,7 +18,9 @@ TBaseNamedModel = TypeVar("TBaseNamedModel", bound=BaseNamedModel)
 
 
 class TypeListModel(Generic[TBaseNamedModel], QAbstractListModel):
-    def __init__(self, data: Set[TBaseNamedModel], parent: QObject | None = None) -> None:
+    def __init__(
+        self, data: Set[TBaseNamedModel], parent: QObject | None = None
+    ) -> None:
         super().__init__(parent)
         self._data = data
 
@@ -127,7 +129,13 @@ class EventTableModel(QAbstractTableModel):
         super().__init__(parent)
         with Session(ENGINE) as session:
             self.ddata = session.exec(select(Event)).all()
-        self.__headers = ("Заголовок", "Дата", "Тип", "Описание")
+        self.__headers = (
+            "Заголовок",
+            "Пространство",
+            "Разновидность",
+            "Дата начала",
+            "Описание",
+        )
 
     def headerData(
         self, section: int, orientation: Qt.Orientation, role: int = ...
@@ -146,14 +154,15 @@ class EventTableModel(QAbstractTableModel):
                 case 0:
                     return event.name
                 case 1:
-                    return event.date.strftime("%d.%m.%Y %H:%M")
+                    return event.section.value
                 case 2:
                     with Session(ENGINE) as session:
-                        type = session.exec(
+                        return session.exec(
                             select(EventType.name).where(EventType.id == event.type_id)
                         ).first()
-                    return type
                 case 3:
+                    return event.date.strftime("%d.%m.%Y %H:%M")
+                case 4:
                     return event.description
 
     def removeRow(self, row: int, parent: QModelIndex = QModelIndex()) -> bool:
@@ -166,7 +175,6 @@ class EventTableModel(QAbstractTableModel):
             session.commit()
         self.endRemoveRows()
         return True
-        
 
     def rowCount(self, _: QModelIndex = ...) -> int:
         return len(self.ddata)

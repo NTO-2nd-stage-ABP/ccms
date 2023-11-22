@@ -1050,7 +1050,7 @@
                <bool>true</bool>
               </attribute>
               <attribute name="verticalHeaderVisible">
-               <bool>true</bool>
+               <bool>false</bool>
               </attribute>
               <attribute name="verticalHeaderCascadingSectionResizes">
                <bool>true</bool>
