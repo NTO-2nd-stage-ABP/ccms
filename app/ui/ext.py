@@ -27,6 +27,7 @@ class MainWindow(QMainWindow):
         self.refreshEventsTable()
         self.eventsTableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.worksTableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.desktopTableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
         self.newEventPushButton.clicked.connect(self.onNewEventPushButtonClicked)
         self.editSelectedEventsPushButton.clicked.connect(
@@ -50,6 +51,9 @@ class MainWindow(QMainWindow):
         self.roomsMaximizeToolButton.clicked.connect(
             lambda: TypeManagerDialog(RoomType, "Помещения:").exec()
         )
+        self.roomsMaximizeToolButton_2.clicked.connect(
+            lambda: TypeManagerDialog(RoomType, "Помещения:").exec()
+        )
         self.worksTypeMaximizeToolButton.clicked.connect(
             lambda: TypeManagerDialog(WorkType, "Виды работ:").exec()
         )
@@ -57,9 +61,11 @@ class MainWindow(QMainWindow):
     def refreshEventsTable(self):
         self.eventsTableModel = EventTableModel()
         self.worksTableModel = WorkTableModel()
+        # self.desktopTableModel = DesktopTableModel()
 
         self.eventsTableView.setModel(self.eventsTableModel)
         self.worksTableView.setModel(self.worksTableModel)
+        # self.desktopTableView.setModel(self.desktopTableModel)
         self.eventsTableView.selectionModel().selectionChanged.connect(self.onEventsTableViewSelectionChanged)
         self.worksTableView.selectionModel().selectionChanged.connect(self.onWorkTableViewSelectionChanged)
 

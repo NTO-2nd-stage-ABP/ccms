@@ -72,7 +72,7 @@
              </layout>
             </item>
             <item>
-             <widget class="QTableView" name="tableView_4">
+             <widget class="QTableView" name="desktopTableView">
               <property name="selectionMode">
                <enum>QAbstractItemView::ExtendedSelection</enum>
               </property>
@@ -787,6 +787,9 @@
               <widget class="QCheckBox" name="checkBox_4">
                <property name="text">
                 <string>Выполнено</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
