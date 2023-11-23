@@ -7,6 +7,7 @@ from PyQt6.QtCore import (
     QAbstractTableModel,
     QModelIndex,
 )
+from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QMessageBox
 from sqlmodel import Session, select
 
@@ -16,20 +17,21 @@ from app.db.models import BaseNamedModel, EventType, Event, Work, WorkType, Room
 TBaseNamedModel = TypeVar("TBaseNamedModel", bound=BaseNamedModel)
 
 SECTIONS = {
-    1: 'Развлечение',
-    2: 'Просвещение',
-    3: 'Образование'
+    1: "Развлечение",
+    2: "Просвещение",
+    3: "Образование"
 }
 
 STATUSES = {
-    1: 'Создана',
-    2: 'К выполнению',
-    3: 'Выполнена'
+    1: "Черновик",
+    2: "Активно",
+    3: "Выполнено"
 }
+
 
 class TypeListModel(Generic[TBaseNamedModel], QAbstractListModel):
     def __init__(
-            self, data: Set[TBaseNamedModel], parent: QObject | None = None
+        self, data: Set[TBaseNamedModel], parent: QObject | None = None
     ) -> None:
         super().__init__(parent)
         self._data = data
@@ -67,8 +69,8 @@ class TypeListModel(Generic[TBaseNamedModel], QAbstractListModel):
         item = self._data[row]
 
         if (
-                self._showObjectDeletionConfirmation(item.name)
-                != QMessageBox.StandardButton.Ok
+            self._showObjectDeletionConfirmation(item.name)
+            != QMessageBox.StandardButton.Ok
         ):
             return False
 
@@ -109,9 +111,9 @@ class TypeListModel(Generic[TBaseNamedModel], QAbstractListModel):
 
     def flags(self, _: QModelIndex) -> Qt.ItemFlag:
         return (
-                Qt.ItemFlag.ItemIsEditable
-                | Qt.ItemFlag.ItemIsEnabled
-                | Qt.ItemFlag.ItemIsSelectable
+            Qt.ItemFlag.ItemIsEditable
+            | Qt.ItemFlag.ItemIsEnabled
+            | Qt.ItemFlag.ItemIsSelectable
         )
 
     def isUniqueNameConstraintFailed(self, name: str) -> bool:
@@ -140,30 +142,40 @@ class WorkTableModel(QAbstractTableModel):
         with Session(ENGINE) as session:
             self.ddata = session.exec(select(Work)).all()
         self.__headers = (
-            "Статус",
-            "Тип",
             "Помещение",
+            "Разновидность",
             "Мероприятие",
+            "Статус",
             "Дедлайн",
+            "Дата создания",
             "Описание",
         )
 
     def headerData(
-            self, section: int, orientation: Qt.Orientation, role: int = ...
+        self, section: int, orientation: Qt.Orientation, role: int = ...
     ) -> Any:
         if (
-                orientation == Qt.Orientation.Horizontal
-                and role == Qt.ItemDataRole.DisplayRole
+            orientation == Qt.Orientation.Horizontal
+            and role == Qt.ItemDataRole.DisplayRole
         ):
             return self.__headers[section]
         return super().headerData(section, orientation, role)
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:
+        work = self.ddata[index.row()]
+        if role == Qt.ItemDataRole.BackgroundRole:
+            match work.status.value:
+                case 2:
+                    return QColor("lightpink")
+                case 3:
+                    return QColor("lightgray")
         if role == Qt.ItemDataRole.DisplayRole:
-            work = self.ddata[index.row()]
             match index.column():
                 case 0:
-                    return STATUSES[work.status.value]
+                    with Session(ENGINE) as session:
+                        return session.exec(
+                            select(RoomType.name).where(RoomType.id == work.room_id)
+                        ).first()
                 case 1:
                     with Session(ENGINE) as session:
                         return session.exec(
@@ -172,18 +184,16 @@ class WorkTableModel(QAbstractTableModel):
                 case 2:
                     with Session(ENGINE) as session:
                         return session.exec(
-                            select(RoomType.name).where(RoomType.id == work.room_id)
-                        ).first()
-                case 3:
-                    with Session(ENGINE) as session:
-                        return session.exec(
                             select(Event.name).where(Event.id == work.event_id)
                         ).first()
+                case 3:
+                    return STATUSES[work.status.value]
                 case 4:
                     return work.deadline.strftime("%d.%m.%Y %H:%M")
                 case 5:
+                    return work.created_at.strftime("%d.%m.%Y %H:%M")
+                case 6:
                     return work.description
-
 
     def removeRow(self, row: int, parent: QModelIndex = QModelIndex()) -> bool:
         self.beginRemoveRows(parent, row, row)
@@ -221,11 +231,11 @@ class EventTableModel(QAbstractTableModel):
         )
 
     def headerData(
-            self, section: int, orientation: Qt.Orientation, role: int = ...
+        self, section: int, orientation: Qt.Orientation, role: int = ...
     ) -> Any:
         if (
-                orientation == Qt.Orientation.Horizontal
-                and role == Qt.ItemDataRole.DisplayRole
+            orientation == Qt.Orientation.Horizontal
+            and role == Qt.ItemDataRole.DisplayRole
         ):
             return self.__headers[section]
         return super().headerData(section, orientation, role)

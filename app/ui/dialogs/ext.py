@@ -205,7 +205,7 @@ class CreateWorkDialog(QDialog):
 
         if self.draftRadioButton.isChecked():
             status = 1
-        elif self.enlightenmentRadioButton.isChecked():
+        elif self.activeRadioButton.isChecked():
             status = 2
         else:
             status = 3
@@ -258,6 +258,8 @@ class EditWorksDialog(QDialog):
         self.descriptionTextEdit.setPlainText(self._work.description)
         self.dateDateTimeEdit.setDateTime(QDateTime(self._work.deadline))
 
+        if self._work.status == WorkStatus(1):
+            self.draftRadioButton.setChecked(True)
         if self._work.status == WorkStatus(2):
             self.activeRadioButton.setChecked(True)
         if self._work.status == WorkStatus(3):
@@ -272,7 +274,7 @@ class EditWorksDialog(QDialog):
 
         if self.draftRadioButton.isChecked():
             status = 1
-        elif self.enlightenmentRadioButton.isChecked():
+        elif self.activeRadioButton.isChecked():
             status = 2
         else:
             status = 3
@@ -283,7 +285,7 @@ class EditWorksDialog(QDialog):
             room_id = session.exec(select(RoomType.id).where(RoomType.name == room)).first()
 
             self._work.description = description
-            self._work.status = status
+            self._work.status = WorkStatus(status)
             self._work.event_id = event_id
             self._work.type_id = type_id
             self._work.room_id = room_id
