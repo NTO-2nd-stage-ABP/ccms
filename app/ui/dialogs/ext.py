@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QDialog, QMessageBox
 from sqlmodel import Session, select
 
 from app.db import ENGINE
-from app.db.models import EventType, Event, WorkType, RoomType, Section, Work
+from app.db.models import EventType, Event, WorkType, RoomType, Section, Work, WorkStatus
 from app.ui.models import TypeListModel
 
 
@@ -68,6 +68,7 @@ class CreateEventDialog(QDialog):
         date = self.dateDateTimeEdit.dateTime().toPyDateTime()
         description = self.descriptionTextEdit.toPlainText()
         event_type_name = self.typeComboBox.currentText()
+        room_type_name = self.roomComboBox.currentText()
 
         if self.entertainemtRadioButton.isChecked():
             section_id = 0
@@ -83,11 +84,15 @@ class CreateEventDialog(QDialog):
             type_id = session.exec(
                 select(EventType.id).where(EventType.name == event_type_name)
             ).first()
+            room_id = session.exec(
+                select(RoomType.id).where(RoomType.name == room_type_name)
+            ).first()
             newEvent = Event(
                 name=title,
                 date=date,
                 description=description,
                 type_id=type_id,
+                room_id=room_id,
                 section=section_id + 1,
             )
             session.add(newEvent)
@@ -123,8 +128,11 @@ class EditEventDialog(QDialog):
 
         with Session(ENGINE) as session:
             eventType = session.get(EventType, self._event.type_id)
+            roomType = session.get(RoomType, self._event.type_id)
             if eventType:
                 self.typeComboBox.setCurrentIndex(eventTypeNames.index(eventType.name))
+            if roomType:
+                self.roomComboBox.setCurrentIndex(roomTypeNames.index(roomType.name))
 
     def accept(self) -> None:
         title = self.titleLineEdit.text()
@@ -138,6 +146,8 @@ class EditEventDialog(QDialog):
         date = self.dateDateTimeEdit.dateTime().toPyDateTime()
         description = self.descriptionTextEdit.toPlainText()
         event_type_name = self.typeComboBox.currentText()
+        room_type_name = self.roomComboBox.currentText()
+
 
         if self.entertainemtRadioButton.isChecked():
             section_id = 0
@@ -153,10 +163,14 @@ class EditEventDialog(QDialog):
             type_id = session.exec(
                 select(EventType.id).where(EventType.name == event_type_name)
             ).first()
+            room_id = session.exec(
+                select(RoomType.id).where(RoomType.name == room_type_name)
+            ).first()
             self._event.name = title
             self._event.date = date
             self._event.description = description
             self._event.type_id = type_id
+            self._event.room_id = room_id
             self._event.section = Section(section_id + 1)
 
             session.add(self._event)
@@ -215,6 +229,71 @@ class CreateWorkDialog(QDialog):
         return super().accept()
 
 
+class EditWorksDialog(QDialog):
+    def __init__(self, work: Work):
+        super().__init__()
+        uic.loadUi("app/ui/dialogs/create_work.ui", self)
+        self.setWindowTitle("Редактирование заявки")
+
+        self._work = work
+        with Session(ENGINE) as session:
+            workTypeNames = session.exec(select(WorkType.name)).all()
+            roomTypeNames = session.exec(select(RoomType.name)).all()
+            eventNames = session.exec(select(Event.name)).all()
+            workType = session.get(WorkType, self._work.type_id)
+            eventType = session.get(Event, self._work.event_id)
+            roomType = session.get(RoomType, self._work.room_id)
+
+        self.typeComboBox.addItems(eventTypeName for eventTypeName in workTypeNames)
+        self.roomComboBox.addItems(eventTypeName for eventTypeName in roomTypeNames)
+        self.eventComboBox.addItems(eventTypeName for eventTypeName in eventNames)
+
+        if workType:
+            self.typeComboBox.setCurrentIndex(workTypeNames.index(workType.name))
+        if eventType:
+            self.eventComboBox.setCurrentIndex(eventNames.index(eventType.name))
+        if roomType:
+            self.roomComboBox.setCurrentIndex(roomTypeNames.index(roomType.name))
+
+        self.descriptionTextEdit.setPlainText(self._work.description)
+        self.dateDateTimeEdit.setDateTime(QDateTime(self._work.deadline))
+
+        if self._work.status == WorkStatus(2):
+            self.activeRadioButton.setChecked(True)
+        if self._work.status == WorkStatus(3):
+            self.completedRadioButton.setChecked(True)
+
+    def accept(self) -> None:
+        deadline = self.dateDateTimeEdit.dateTime().toPyDateTime()
+        description = self.descriptionTextEdit.toPlainText()
+        work_type_name = self.typeComboBox.currentText()
+        room = self.roomComboBox.currentText()
+        event = self.eventComboBox.currentText()
+
+        if self.draftRadioButton.isChecked():
+            status = 1
+        elif self.enlightenmentRadioButton.isChecked():
+            status = 2
+        else:
+            status = 3
+
+        with Session(ENGINE) as session:
+            event_id = session.exec(select(EventType.id).where(EventType.name == event)).first()
+            type_id = session.exec(select(WorkType.id).where(WorkType.name == work_type_name)).first()
+            room_id = session.exec(select(RoomType.id).where(RoomType.name == room)).first()
+
+            self._work.description = description
+            self._work.status = status
+            self._work.event_id = event_id
+            self._work.type_id = type_id
+            self._work.room_id = room_id
+            self._work.deadline = deadline
+
+            session.add(self._work)
+            session.commit()
+            session.refresh(self._work)
+
+        return super().accept()
 
 
 

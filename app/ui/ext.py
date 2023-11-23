@@ -1,14 +1,15 @@
 from PyQt6 import uic
-from PyQt6.QtWidgets import QMainWindow, QTableView, QAbstractItemView, QMessageBox, QHeaderView
+from PyQt6.QtWidgets import QMainWindow, QMessageBox, QHeaderView
 
 from app.db.models import EventType, RoomType, WorkType
-from app.ui.models import EventTableModel
 from app.ui.dialogs import (
     TypeManagerDialog,
     CreateEventDialog,
     EditEventDialog,
     CreateWorkDialog,
 )
+from app.ui.dialogs.ext import EditWorksDialog
+from app.ui.models import EventTableModel, WorkTableModel
 
 
 class MainWindow(QMainWindow):
@@ -25,6 +26,8 @@ class MainWindow(QMainWindow):
 
         self.refreshEventsTable()
         self.eventsTableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.worksTableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+
         self.newEventPushButton.clicked.connect(self.onNewEventPushButtonClicked)
         self.editSelectedEventsPushButton.clicked.connect(
             self.onEditSelectedEventsPushButtonClicked
@@ -32,7 +35,14 @@ class MainWindow(QMainWindow):
         self.deleteSelectedEventsPushButton.clicked.connect(
             self.onDeleteSelectedEventsPushButtonClicked
         )
+
         self.newWorkPushButton.clicked.connect(self.onNewWorkPushButtonClicked)
+        self.editSelectedWorksPushButton.clicked.connect(
+            self.onEditSelectedWorksPushButtonClicked
+        )
+        self.deleteSelectedWorksPushButton.clicked.connect(
+            self.onDeleteSelectedWorksPushButtonClicked
+        )
 
         self.eventsTypeMaximizeToolButton.clicked.connect(
             lambda: TypeManagerDialog(EventType, "Виды мероприятий:").exec()
@@ -46,22 +56,34 @@ class MainWindow(QMainWindow):
 
     def refreshEventsTable(self):
         self.eventsTableModel = EventTableModel()
+        self.worksTableModel = WorkTableModel()
+
         self.eventsTableView.setModel(self.eventsTableModel)
-        self.eventsTableView.selectionModel().selectionChanged.connect(
-            self.onEventsTableViewSelectionChanged
-        )
-        self.eventsTableView.doubleClicked.connect(
-            self.onEditSelectedEventsPushButtonClicked
-        )
+        self.worksTableView.setModel(self.worksTableModel)
+        self.eventsTableView.selectionModel().selectionChanged.connect(self.onEventsTableViewSelectionChanged)
+        self.worksTableView.selectionModel().selectionChanged.connect(self.onWorkTableViewSelectionChanged)
+
+        self.eventsTableView.doubleClicked.connect(self.onEditSelectedEventsPushButtonClicked)
+        self.worksTableView.doubleClicked.connect(self.onEditSelectedWorksPushButtonClicked)
 
     def onNewEventPushButtonClicked(self):
         dlg = CreateEventDialog()
         dlg.exec()
         self.refreshEventsTable()
 
+    def onEditSelectedWorksPushButtonClicked(self):
+        index = self.worksTableView.selectedIndexes()[0].row()
+        dlg = EditWorksDialog(self.worksTableModel.ddata[index])
+        dlg.exec()
+
     def onEditSelectedEventsPushButtonClicked(self):
         index = self.eventsTableView.selectedIndexes()[0].row()
         dlg = EditEventDialog(self.eventsTableModel.ddata[index])
+        dlg.exec()
+
+    def onEditSelectedWorksPushButtonClicked(self):
+        index = self.worksTableView.selectedIndexes()[0].row()
+        dlg = EditWorksDialog(self.worksTableModel.ddata[index])
         dlg.exec()
 
     def onEventsTableViewSelectionChanged(self):
@@ -72,12 +94,27 @@ class MainWindow(QMainWindow):
         self.deleteSelectedEventsPushButton.setEnabled(selectedIndexesCount)
         self.editSelectedEventsPushButton.setEnabled(selectedIndexesCount == 1)
 
+    def onWorkTableViewSelectionChanged(self):
+        selectedIndexesCount = len(self.worksTableView.selectionModel().selectedRows())
+        self.selectedWorkCountLabel.setText(
+            f"{selectedIndexesCount} из {self.worksTableModel.rowCount()} выбрано"
+        )
+        self.deleteSelectedWorksPushButton.setEnabled(selectedIndexesCount)
+        self.editSelectedWorksPushButton.setEnabled(selectedIndexesCount == 1)
+
     def onDeleteSelectedEventsPushButtonClicked(self):
         if self.showConfirmationWarning() != QMessageBox.StandardButton.Ok:
             return False
 
         for index in self.eventsTableView.selectionModel().selectedRows():
             self.eventsTableModel.removeRow(index.row())
+
+    def onDeleteSelectedWorksPushButtonClicked(self):
+        if self.showConfirmationWarning() != QMessageBox.StandardButton.Ok:
+            return False
+
+        for index in self.worksTableView.selectionModel().selectedRows():
+            self.worksTableModel.removeRow(index.row())
 
     def showConfirmationWarning(self):
         return QMessageBox.warning(
@@ -90,6 +127,7 @@ class MainWindow(QMainWindow):
     def onNewWorkPushButtonClicked(self):
         dlg = CreateWorkDialog()
         dlg.exec()
+        self.refreshEventsTable()
 
 
 __all__ = ["MainWindow"]

@@ -34,6 +34,8 @@ class EventType(BaseNamedModel, table=True):
 
     events: List["Event"] = Relationship(back_populates="type")
 
+class RoomType(BaseNamedModel, table=True):
+    works: List["Work"] = Relationship(back_populates="room")
 
 class Event(BaseModel, table=True):
     """
@@ -48,13 +50,13 @@ class Event(BaseModel, table=True):
     type_id: Optional[int] = Field(default=None, foreign_key="eventtype.id")
     type: EventType = Relationship(back_populates="events")
 
+    room_id: Optional[int] = Field(default=None, foreign_key="roomtype.id")
+    # type: RoomType = Relationship(back_populates="room")
+
     section: Section
     
     works: List["Work"] = Relationship(back_populates="event")
 
-
-class RoomType(BaseNamedModel, table=True):
-    works: List["Work"] = Relationship(back_populates="room")
 
 
 class WorkType(BaseNamedModel, table=True):

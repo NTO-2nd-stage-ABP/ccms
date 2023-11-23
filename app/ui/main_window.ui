@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>623</height>
+    <width>1004</width>
+    <height>713</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,6 +17,9 @@
    <layout class="QGridLayout" name="gridLayout_4">
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
       <widget class="QWidget" name="tab">
        <attribute name="icon">
         <iconset>
@@ -71,7 +74,7 @@
             <item>
              <widget class="QTableView" name="tableView_4">
               <property name="selectionMode">
-               <enum>QAbstractItemView::SingleSelection</enum>
+               <enum>QAbstractItemView::ExtendedSelection</enum>
               </property>
               <property name="selectionBehavior">
                <enum>QAbstractItemView::SelectRows</enum>
@@ -493,7 +496,7 @@
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_9">
               <item>
-               <widget class="QPushButton" name="pushButton_5">
+               <widget class="QPushButton" name="editSelectedWorksPushButton">
                 <property name="enabled">
                  <bool>false</bool>
                 </property>
@@ -507,7 +510,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_6">
+               <widget class="QPushButton" name="deleteSelectedWorksPushButton">
                 <property name="enabled">
                  <bool>false</bool>
                 </property>
@@ -534,7 +537,7 @@
                </spacer>
               </item>
               <item>
-               <widget class="QLabel" name="label_16">
+               <widget class="QLabel" name="selectedWorkCountLabel">
                 <property name="text">
                  <string>0 из 1 выбрано</string>
                 </property>
@@ -543,9 +546,9 @@
              </layout>
             </item>
             <item>
-             <widget class="QTableView" name="tableView_2">
+             <widget class="QTableView" name="worksTableView">
               <property name="selectionMode">
-               <enum>QAbstractItemView::SingleSelection</enum>
+               <enum>QAbstractItemView::ExtendedSelection</enum>
               </property>
               <property name="selectionBehavior">
                <enum>QAbstractItemView::SelectRows</enum>
