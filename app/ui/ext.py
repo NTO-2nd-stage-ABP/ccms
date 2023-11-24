@@ -52,6 +52,12 @@ class MainWindow(QMainWindow):
         self.deleteSelectedEventsPushButton.clicked.connect(
             self.onDeleteSelectedEventsPushButtonClicked
         )
+        
+        with Session(ENGINE) as session:
+            workTypeNames = session.exec(select(WorkRequestType.name)).all()
+
+        self.comboBox_12.addItems(workTypeName for workTypeName in workTypeNames)
+        self.comboBox_12.currentTextChanged.connect(self.filterByWorkTypeName)
 
         self.newWorkPushButton.clicked.connect(self.onNewWorkPushButtonClicked)
         self.editSelectedWorksPushButton.clicked.connect(
@@ -77,9 +83,15 @@ class MainWindow(QMainWindow):
             lambda: TypeManagerDialog(WorkRequestType, "Виды работ:").exec()
         )
         
-    def refreshDesktop(self):
+    def filterByWorkTypeName(self):
+        name = self.comboBox_12.currentText()
         with Session(ENGINE) as session:
-            workRequests: Set[WorkRequest] = session.exec(select(WorkRequest)).all()
+            type_id = session.exec(select(WorkRequestType.id).where(WorkRequestType.name == name)).first()
+        self.refreshDesktop(WorkRequest.type_id == type_id)
+        
+    def refreshDesktop(self, where=None):
+        with Session(ENGINE) as session:
+            workRequests: Set[WorkRequest] = session.exec(select(WorkRequest).where(where)).all()
             self.desktopTableModel = WorkRequestTableModel(
                 list(
                     filter(

@@ -70,7 +70,7 @@ class WorkRequest(BaseModel, table=True):
         DRAFT = 1
         ACTIVE = 2
         COMPLETED = 3
-    
+
     description: Optional[str] = Field(default=None, max_length=1028)
 
     event_id: Optional[int] = Field(default=None, foreign_key="event.id")
