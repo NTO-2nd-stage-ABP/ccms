@@ -34,8 +34,10 @@ class EventType(BaseNamedModel, table=True):
 
     events: List["Event"] = Relationship(back_populates="type")
 
+
 class RoomType(BaseNamedModel, table=True):
-    works: List["Work"] = Relationship(back_populates="room")
+    works: List["WorkRequest"] = Relationship(back_populates="room")
+
 
 class Event(BaseModel, table=True):
     """
@@ -43,8 +45,8 @@ class Event(BaseModel, table=True):
     """
 
     name: str = Field(max_length=256)
-    date: datetime
-    # created_at: datetime = Field(nullable=False, default_factory=datetime.now)
+    start_at: datetime
+    created_at: datetime = Field(nullable=False, default_factory=datetime.now)
     description: Optional[str] = Field(default=None, max_length=1028)
 
     type_id: Optional[int] = Field(default=None, foreign_key="eventtype.id")
@@ -54,34 +56,33 @@ class Event(BaseModel, table=True):
     # type: RoomType = Relationship(back_populates="room")
 
     section: Section
-    
-    works: List["Work"] = Relationship(back_populates="event")
+
+    works: List["WorkRequest"] = Relationship(back_populates="event")
 
 
-
-class WorkType(BaseNamedModel, table=True):
-    works: List["Work"] = Relationship(back_populates="type")
-
-
-class WorkStatus(Enum):
+class WorkRequestStatus(Enum):
     DRAFT = 1
-    PROGRESS = 2
+    ACTIVE = 2
     COMPLETED = 3
 
 
-class Work(BaseModel, table=True):
+class WorkRequestType(BaseNamedModel, table=True):
+    works: List["WorkRequest"] = Relationship(back_populates="type")
+
+
+class WorkRequest(BaseModel, table=True):
     description: Optional[str] = Field(default=None, max_length=1028)
-    
+
     event_id: Optional[int] = Field(default=None, foreign_key="event.id")
     event: Event = Relationship(back_populates="works")
-    
-    type_id: Optional[int] = Field(default=None, foreign_key="worktype.id")
-    type: WorkType = Relationship(back_populates="works")
-    
+
+    type_id: Optional[int] = Field(default=None, foreign_key="workrequesttype.id")
+    type: WorkRequestType = Relationship(back_populates="works")
+
     room_id: Optional[int] = Field(default=None, foreign_key="roomtype.id")
     room: RoomType = Relationship(back_populates="works")
-    
+
     deadline: datetime = Field(nullable=False)
     created_at: datetime = Field(nullable=False, default_factory=datetime.now)
-    
-    status: WorkStatus = Field(nullable=False)
+
+    status: WorkRequestStatus = Field(nullable=False)
