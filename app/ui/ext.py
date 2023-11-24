@@ -70,18 +70,26 @@ class MainWindow(QMainWindow):
             self.onCompleteSelectedWorksPushButtonClicked
         )
 
-        self.eventsTypeMaximizeToolButton.clicked.connect(
-            lambda: TypeManagerDialog(EventType, "Виды мероприятий:").exec()
-        )
-        self.roomsMaximizeToolButton.clicked.connect(
-            lambda: TypeManagerDialog(RoomType, "Помещения:").exec()
-        )
-        self.roomsMaximizeToolButton_2.clicked.connect(
-            lambda: TypeManagerDialog(RoomType, "Помещения:").exec()
-        )
-        self.worksTypeMaximizeToolButton.clicked.connect(
-            lambda: TypeManagerDialog(WorkRequestType, "Виды работ:").exec()
-        )
+        self.eventsTypeMaximizeToolButton.clicked.connect(self.showEventTypeDialog)
+        self.roomsMaximizeToolButton.clicked.connect(self.showRoomTypeDialog)
+        self.roomsMaximizeToolButton_2.clicked.connect(self.showRoomTypeDialog)
+        self.worksTypeMaximizeToolButton.clicked.connect(self.showWorkRequestTypeDialog)
+        
+    def showEventTypeDialog(self):
+        TypeManagerDialog(EventType, "Виды мероприятий:").exec()
+        self.refreshTableViews()
+        
+    def showRoomTypeDialog(self):
+        TypeManagerDialog(RoomType, "Помещения:").exec()
+        self.refreshTableViews()
+        
+    def showWorkRequestTypeDialog(self):
+        lambda: TypeManagerDialog(RoomType, "Помещения:").exec()
+        self.refreshTableViews()
+        
+    def showWorkRequestTypeDialog(self):
+        TypeManagerDialog(WorkRequestType, "Виды работ:").exec()
+        self.refreshTableViews()
         
     def filterByWorkTypeName(self):
         name = self.comboBox_12.currentText()
