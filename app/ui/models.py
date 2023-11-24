@@ -158,6 +158,26 @@ class BaseTableModel(Generic[TModel], QAbstractTableModel):
                 session.add(item)
                 return list(self.GENERATORS.values())[index.column()](item)
 
+    def insertRow(self, row: int, parent: QModelIndex = QModelIndex(), dlg=None) -> bool:
+        self.beginInsertRows(parent, row, row)
+
+        name = f"Объект ({self.rowCount()})"
+
+        # if self.isUniqueNameConstraintFailed(name):
+            # self._showUniqueNameConstraintWarning(name)
+            # return False
+
+        with Session(ENGINE) as session:
+            newObj: TBaseNamedModel = self._getGenericType()(name=name)
+            session.add(newObj)
+            session.commit()
+            session.refresh(newObj)
+
+        self._data.append(newObj)
+
+        self.endInsertRows()
+        return True
+
     def removeRow(
         self, row: int, delete=True, parent: QModelIndex = QModelIndex()
     ) -> bool:

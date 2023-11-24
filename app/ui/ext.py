@@ -1,6 +1,6 @@
 from typing import Set
 from PyQt6 import uic
-from PyQt6.QtWidgets import QMainWindow, QMessageBox, QHeaderView
+from PyQt6.QtWidgets import QMainWindow, QMessageBox, QHeaderView, QWidget, QTableView
 
 from sqlmodel import Session, select
 
@@ -22,6 +22,12 @@ from app.ui.dialogs.ext import EditWorksDialog
 from app.ui.models import EventTableModel, WorkRequestTableModel
 
 
+class Table(QWidget):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        pass
+
+
 class MainWindow(QMainWindow):
     """
     Represents the Main-Window of this application.
@@ -33,62 +39,37 @@ class MainWindow(QMainWindow):
         """
         super().__init__()
         uic.loadUi("app/ui/main_window.ui", self)
+        
+        self.eventsTableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.worksTableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.desktopTableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
         self.refreshTableViews()
-        self.eventsTableView.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.Stretch
-        )
-        self.worksTableView.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.Stretch
-        )
-        self.desktopTableView.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.Stretch
-        )
+        
+        self.eventsTypeMaximizePushButton.clicked.connect(lambda: self.showTypeManagerDialog(EventType, "Виды мероприятий:"))
+        self.worksTypeMaximizePushButton.clicked.connect(lambda: self.showTypeManagerDialog(WorkRequestType, "Виды работ:"))
+        self.action_2.triggered.connect(lambda: self.showTypeManagerDialog(RoomType, "Помещения:"))
 
-        self.newEventPushButton.clicked.connect(self.onNewEventPushButtonClicked)
-        self.editSelectedEventsPushButton.clicked.connect(
-            self.onEditSelectedEventsPushButtonClicked
-        )
-        self.deleteSelectedEventsPushButton.clicked.connect(
-            self.onDeleteSelectedEventsPushButtonClicked
-        )
+        self.newEventPushButton.clicked.connect(lambda: self.onCreateClicked(CreateEventDialog()))
+        self.newWorkPushButton.clicked.connect(lambda: self.onCreateClicked(CreateWorkDialog()))
+        
+        self.editSelectedEventsPushButton.clicked.connect(self.onEditSelectedEventsPushButtonClicked)
+        self.editSelectedWorksPushButton.clicked.connect(self.onEditSelectedWorksPushButtonClicked)
+        
+        self.deleteSelectedEventsPushButton.clicked.connect(lambda: self.onDeleteRowsClicked(self.eventsTableView))
+        self.deleteSelectedWorksPushButton.clicked.connect(lambda: self.onDeleteRowsClicked(self.worksTableView))
+
+        self.completeSelectedDesktopPushButton.clicked.connect(self.onCompleteSelectedWorksPushButtonClicked)
 
         with Session(ENGINE) as session:
             workTypeNames = session.exec(select(WorkRequestType.name)).all()
 
         self.comboBox_12.addItems(workTypeName for workTypeName in workTypeNames)
         self.comboBox_12.currentTextChanged.connect(self.filterByWorkTypeName)
+        self.resetDesktopFilterButton.clicked.connect(self.refreshDesktop)
 
-        self.newWorkPushButton.clicked.connect(self.onNewWorkPushButtonClicked)
-        self.editSelectedWorksPushButton.clicked.connect(
-            self.onEditSelectedWorksPushButtonClicked
-        )
-        self.deleteSelectedWorksPushButton.clicked.connect(
-            self.onDeleteSelectedWorksPushButtonClicked
-        )
-        self.completeSelectedDesktopPushButton.clicked.connect(
-            self.onCompleteSelectedWorksPushButtonClicked
-        )
-
-        self.eventsTypeMaximizeToolButton.clicked.connect(self.showEventTypeDialog)
-        self.roomsMaximizeToolButton.clicked.connect(self.showRoomTypeDialog)
-        self.roomsMaximizeToolButton_2.clicked.connect(self.showRoomTypeDialog)
-        self.worksTypeMaximizeToolButton.clicked.connect(self.showWorkRequestTypeDialog)
-
-    def showEventTypeDialog(self):
-        TypeManagerDialog(EventType, "Виды мероприятий:").exec()
-        self.refreshTableViews()
-
-    def showRoomTypeDialog(self):
-        TypeManagerDialog(RoomType, "Помещения:").exec()
-        self.refreshTableViews()
-
-    def showWorkRequestTypeDialog(self):
-        lambda: TypeManagerDialog(RoomType, "Помещения:").exec()
-        self.refreshTableViews()
-
-    def showWorkRequestTypeDialog(self):
-        TypeManagerDialog(WorkRequestType, "Виды работ:").exec()
+    def showTypeManagerDialog(self, _type, title):
+        TypeManagerDialog(_type, title).exec()
         self.refreshTableViews()
 
     def filterByWorkTypeName(self):
@@ -97,47 +78,35 @@ class MainWindow(QMainWindow):
             type_id = session.exec(
                 select(WorkRequestType.id).where(WorkRequestType.name == name)
             ).first()
-        self.refreshDesktop(WorkRequest.type_id == type_id)
+        self.refreshDesktop(where=WorkRequest.type_id == type_id)
 
-    def refreshDesktop(self, where=None):
+    def refreshDesktop(self, *args, where=None):
         with Session(ENGINE) as session:
-            if where is None:
-                workRequests: Set[WorkRequest] = session.exec(select(WorkRequest)).all()
-            else:
-                workRequests: Set[WorkRequest] = session.exec(
-                    select(WorkRequest).where(where)
-                ).all()
-            self.desktopTableModel = WorkRequestTableModel(
-                list(
-                    filter(
-                        lambda request: request.status == WorkRequest.Status.ACTIVE,
-                        workRequests,
-                    )
-                )
-            )
+            statement = select(WorkRequest).where(WorkRequest.status == WorkRequest.Status.ACTIVE)
+            if where is not None:
+                statement = statement.where(where)
+            data: Set[WorkRequest] = session.exec(statement).all()
+
+        self.desktopTableModel = WorkRequestTableModel(data)
         self.desktopTableView.setModel(self.desktopTableModel)
         self.desktopTableView.selectionModel().selectionChanged.connect(
             self.onDesktopTableViewSelectionChanged
         )
+        self.completeSelectedDesktopPushButton.setEnabled(False)
+        
+    # def refreshWorkRequests(self, *args, where=None):
 
     def refreshTableViews(self):
+        self.refreshDesktop()
+
         with Session(ENGINE) as session:
             events = session.exec(select(Event)).all()
             workRequests: Set[WorkRequest] = session.exec(select(WorkRequest)).all()
             self.worksTableModel = WorkRequestTableModel(workRequests)
-            self.desktopTableModel = WorkRequestTableModel(
-                list(
-                    filter(
-                        lambda request: request.status == WorkRequest.Status.ACTIVE,
-                        workRequests,
-                    )
-                )
-            )
             self.eventsTableModel = EventTableModel(events)
 
         self.eventsTableView.setModel(self.eventsTableModel)
         self.worksTableView.setModel(self.worksTableModel)
-        self.desktopTableView.setModel(self.desktopTableModel)
 
         self.eventsTableView.selectionModel().selectionChanged.connect(
             self.onEventsTableViewSelectionChanged
@@ -145,21 +114,11 @@ class MainWindow(QMainWindow):
         self.worksTableView.selectionModel().selectionChanged.connect(
             self.onWorkTableViewSelectionChanged
         )
-        self.desktopTableView.selectionModel().selectionChanged.connect(
-            self.onDesktopTableViewSelectionChanged
-        )
-
-        self.eventsTableView.doubleClicked.connect(
-            self.onEditSelectedEventsPushButtonClicked
-        )
-        self.worksTableView.doubleClicked.connect(
-            self.onEditSelectedWorksPushButtonClicked
-        )
-
-    def onNewEventPushButtonClicked(self):
-        dlg = CreateEventDialog()
-        dlg.exec()
-        self.refreshTableViews()
+        
+        self.deleteSelectedEventsPushButton.setEnabled(False)
+        self.editSelectedEventsPushButton.setEnabled(False)
+        self.editSelectedWorksPushButton.setEnabled(False)
+        self.deleteSelectedWorksPushButton.setEnabled(False)
 
     def onEditSelectedEventsPushButtonClicked(self):
         index = self.eventsTableView.selectedIndexes()[0].row()
@@ -172,44 +131,43 @@ class MainWindow(QMainWindow):
         dlg.exec()
         self.refreshDesktop()
 
-    def onEventsTableViewSelectionChanged(self):
-        selectedIndexesCount = len(self.eventsTableView.selectionModel().selectedRows())
-        self.selectedEventsCountLabel.setText(
-            f"{selectedIndexesCount} из {self.eventsTableModel.rowCount()} выбрано"
+    def updateSelection(self, tableView, countLabel, tableModel, deleteButton, editButton):
+        selectedIndexesCount = len(
+            tableView.selectionModel().selectedRows()
         )
-        self.deleteSelectedEventsPushButton.setEnabled(selectedIndexesCount)
-        self.editSelectedEventsPushButton.setEnabled(selectedIndexesCount == 1)
+        countLabel.setText(
+            f"{selectedIndexesCount} из {tableModel.rowCount()} выбрано"
+        )
+        deleteButton.setEnabled(selectedIndexesCount)
+        if editButton:
+            editButton.setEnabled(selectedIndexesCount == 1)
+
+    def onEventsTableViewSelectionChanged(self):
+        self.updateSelection(
+            self.eventsTableView,
+            self.selectedEventsCountLabel,
+            self.eventsTableModel,
+            self.deleteSelectedEventsPushButton,
+            self.editSelectedEventsPushButton
+        )
 
     def onWorkTableViewSelectionChanged(self):
-        selectedIndexesCount = len(self.worksTableView.selectionModel().selectedRows())
-        self.selectedWorkCountLabel.setText(
-            f"{selectedIndexesCount} из {self.worksTableModel.rowCount()} выбрано"
+        self.updateSelection(
+            self.worksTableView,
+            self.selectedWorkCountLabel,
+            self.worksTableModel,
+            self.deleteSelectedWorksPushButton,
+            self.editSelectedWorksPushButton
         )
-        self.deleteSelectedWorksPushButton.setEnabled(selectedIndexesCount)
-        self.editSelectedWorksPushButton.setEnabled(selectedIndexesCount == 1)
 
     def onDesktopTableViewSelectionChanged(self):
-        selectedIndexesCount = len(
-            self.desktopTableView.selectionModel().selectedRows()
+        self.updateSelection(
+            self.desktopTableView,
+            self.selectedDesktopCountLabel,
+            self.desktopTableModel,
+            self.completeSelectedDesktopPushButton,
+            None  # Assuming there's no edit button for desktop items
         )
-        self.selectedDesktopCountLabel.setText(
-            f"{selectedIndexesCount} из {self.desktopTableModel.rowCount()} выбрано"
-        )
-        self.completeSelectedDesktopPushButton.setEnabled(selectedIndexesCount)
-
-    def onDeleteSelectedEventsPushButtonClicked(self):
-        if self.showConfirmationWarning() != QMessageBox.StandardButton.Ok:
-            return False
-
-        for index in self.eventsTableView.selectionModel().selectedRows():
-            self.eventsTableModel.removeRow(index.row())
-
-    def onDeleteSelectedWorksPushButtonClicked(self):
-        if self.showConfirmationWarning() != QMessageBox.StandardButton.Ok:
-            return False
-
-        for index in self.worksTableView.selectionModel().selectedRows():
-            self.worksTableModel.removeRow(index.row())
 
     def onCompleteSelectedWorksPushButtonClicked(self):
         with Session(ENGINE) as session:
@@ -221,6 +179,17 @@ class MainWindow(QMainWindow):
                 self.desktopTableModel.removeRow(index.row(), delete=False)
             session.commit()
         self.refreshTableViews()
+        
+    def onCreateClicked(self, dlg):
+        dlg.exec()
+        self.refreshTableViews()
+        
+    def onDeleteRowsClicked(self, tableView: QTableView):
+        if self.showConfirmationWarning() != QMessageBox.StandardButton.Ok:
+            return
+
+        for index in tableView.selectionModel().selectedRows():
+            tableView.model().removeRow(index.row())
 
     def showConfirmationWarning(self):
         return QMessageBox.warning(
@@ -229,11 +198,6 @@ class MainWindow(QMainWindow):
             "Вы действительно хотите удалить выбранные объекты?",
             defaultButton=QMessageBox.StandardButton.Cancel,
         )
-
-    def onNewWorkPushButtonClicked(self):
-        dlg = CreateWorkDialog()
-        dlg.exec()
-        self.refreshTableViews()
 
 
 __all__ = ["MainWindow"]
