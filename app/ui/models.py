@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import QMessageBox
 from sqlmodel import Session, select
 
 from app.db import ENGINE
-from app.db.models import BaseNamedModel, EventType, Event, Work, WorkType, RoomType
+from app.db.models import BaseNamedModel, EventType, Event, Work, WorkType, RoomType, WorkStatus
 
 TBaseNamedModel = TypeVar("TBaseNamedModel", bound=BaseNamedModel)
 
@@ -204,6 +204,88 @@ class WorkTableModel(QAbstractTableModel):
             self.ddata.remove(item)
             session.commit()
         self.endRemoveRows()
+        return True
+
+    def rowCount(self, _: QModelIndex = ...) -> int:
+        return len(self.ddata)
+
+    def columnCount(self, _: QModelIndex = ...) -> int:
+        return len(self.__headers)
+
+    def flags(self, _: QModelIndex) -> Qt.ItemFlag:
+        return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
+
+
+class DesktopTableModel(QAbstractTableModel):
+    def __init__(self, parent: QObject | None = None) -> None:
+        super().__init__(parent)
+        with Session(ENGINE) as session:
+            self.ddata = session.exec(select(Work).where(Work.status == WorkStatus(2))).all()
+        self.__headers = (
+            "Помещение",
+            "Разновидность",
+            "Мероприятие",
+            "Статус",
+            "Дедлайн",
+            "Дата создания",
+            "Описание",
+        )
+
+    def headerData(
+        self, section: int, orientation: Qt.Orientation, role: int = ...
+    ) -> Any:
+        if (
+            orientation == Qt.Orientation.Horizontal
+            and role == Qt.ItemDataRole.DisplayRole
+        ):
+            return self.__headers[section]
+        return super().headerData(section, orientation, role)
+
+    def data(self, index: QModelIndex, role: int = ...) -> Any:
+        work = self.ddata[index.row()]
+        if role == Qt.ItemDataRole.BackgroundRole:
+            match work.status.value:
+                case 2:
+                    return QColor("lightpink")
+                case 3:
+                    return QColor("lightgray")
+        if role == Qt.ItemDataRole.DisplayRole:
+            match index.column():
+                case 0:
+                    with Session(ENGINE) as session:
+                        return session.exec(
+                            select(RoomType.name).where(RoomType.id == work.room_id)
+                        ).first()
+                case 1:
+                    with Session(ENGINE) as session:
+                        return session.exec(
+                            select(WorkType.name).where(WorkType.id == work.type_id)
+                        ).first()
+                case 2:
+                    with Session(ENGINE) as session:
+                        return session.exec(
+                            select(Event.name).where(Event.id == work.event_id)
+                        ).first()
+                case 3:
+                    return STATUSES[work.status.value]
+                case 4:
+                    return work.deadline.strftime("%d.%m.%Y %H:%M")
+                case 5:
+                    return work.created_at.strftime("%d.%m.%Y %H:%M")
+                case 6:
+                    return work.description
+
+    def removeRow(self, row: int, parent: QModelIndex = QModelIndex()) -> bool:
+        self.beginRemoveRows(parent, row, row)
+        with Session(ENGINE) as session:
+            item = self.ddata[row]
+            item.status = WorkStatus(3)
+            # workType = session.get(Work, item.id)
+            # session.delete(workType)
+            session.add(item)
+            session.commit()
+            session.refresh(item)
+        # self.endRemoveRows()
         return True
 
     def rowCount(self, _: QModelIndex = ...) -> int:

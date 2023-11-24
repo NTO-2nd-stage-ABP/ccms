@@ -36,7 +36,7 @@
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_22">
               <item>
-               <widget class="QPushButton" name="pushButton_12">
+               <widget class="QPushButton" name="completeSelectedDesktopPushButton">
                 <property name="enabled">
                  <bool>false</bool>
                 </property>
@@ -63,7 +63,7 @@
                </spacer>
               </item>
               <item>
-               <widget class="QLabel" name="label_22">
+               <widget class="QLabel" name="selectedDesktopCountLabel">
                 <property name="text">
                  <string>0 из 1 выбрано</string>
                 </property>
