@@ -19,7 +19,7 @@ from app.ui.dialogs import (
     CreateWorkDialog,
 )
 from app.ui.dialogs.ext import EditWorksDialog
-from app.ui.models import EventTableModel, WorkTableModel, DesktopTableModel
+from app.ui.models import EventTableModel, WorkTableModel
 
 
 class MainWindow(QMainWindow):
