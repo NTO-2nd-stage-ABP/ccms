@@ -52,7 +52,7 @@ class MainWindow(QMainWindow):
         self.deleteSelectedEventsPushButton.clicked.connect(
             self.onDeleteSelectedEventsPushButtonClicked
         )
-        
+
         with Session(ENGINE) as session:
             workTypeNames = session.exec(select(WorkRequestType.name)).all()
 
@@ -74,32 +74,39 @@ class MainWindow(QMainWindow):
         self.roomsMaximizeToolButton.clicked.connect(self.showRoomTypeDialog)
         self.roomsMaximizeToolButton_2.clicked.connect(self.showRoomTypeDialog)
         self.worksTypeMaximizeToolButton.clicked.connect(self.showWorkRequestTypeDialog)
-        
+
     def showEventTypeDialog(self):
         TypeManagerDialog(EventType, "Виды мероприятий:").exec()
         self.refreshTableViews()
-        
+
     def showRoomTypeDialog(self):
         TypeManagerDialog(RoomType, "Помещения:").exec()
         self.refreshTableViews()
-        
+
     def showWorkRequestTypeDialog(self):
         lambda: TypeManagerDialog(RoomType, "Помещения:").exec()
         self.refreshTableViews()
-        
+
     def showWorkRequestTypeDialog(self):
         TypeManagerDialog(WorkRequestType, "Виды работ:").exec()
         self.refreshTableViews()
-        
+
     def filterByWorkTypeName(self):
         name = self.comboBox_12.currentText()
         with Session(ENGINE) as session:
-            type_id = session.exec(select(WorkRequestType.id).where(WorkRequestType.name == name)).first()
+            type_id = session.exec(
+                select(WorkRequestType.id).where(WorkRequestType.name == name)
+            ).first()
         self.refreshDesktop(WorkRequest.type_id == type_id)
-        
+
     def refreshDesktop(self, where=None):
         with Session(ENGINE) as session:
-            workRequests: Set[WorkRequest] = session.exec(select(WorkRequest).where(where)).all()
+            if where is None:
+                workRequests: Set[WorkRequest] = session.exec(select(WorkRequest)).all()
+            else:
+                workRequests: Set[WorkRequest] = session.exec(
+                    select(WorkRequest).where(where)
+                ).all()
             self.desktopTableModel = WorkRequestTableModel(
                 list(
                     filter(
@@ -112,7 +119,6 @@ class MainWindow(QMainWindow):
         self.desktopTableView.selectionModel().selectionChanged.connect(
             self.onDesktopTableViewSelectionChanged
         )
-        
 
     def refreshTableViews(self):
         with Session(ENGINE) as session:
@@ -206,7 +212,7 @@ class MainWindow(QMainWindow):
             self.worksTableModel.removeRow(index.row())
 
     def onCompleteSelectedWorksPushButtonClicked(self):
-        with Session(ENGINE) as session:    
+        with Session(ENGINE) as session:
             for index in self.desktopTableView.selectionModel().selectedRows():
                 item: WorkRequest = self.desktopTableModel._data[index.row()]
                 workRequest: WorkRequest = session.get(WorkRequest, item.id)
