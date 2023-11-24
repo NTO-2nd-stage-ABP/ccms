@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QDialog, QMessageBox
 from sqlmodel import Session, select
 
 from app.db import ENGINE
-from app.db.models import EventType, Event, WorkRequestType, RoomType, Section, WorkRequest, WorkRequestStatus
+from app.db.models import EventType, Event, WorkRequestType, RoomType, Section, WorkRequest
 from app.ui.dialogs.alerts import validationError
 from app.ui.models import TypeListModel
 
@@ -250,11 +250,11 @@ class EditWorksDialog(QDialog):
         self.descriptionTextEdit.setPlainText(self._work.description)
         self.dateDateTimeEdit.setDateTime(QDateTime(self._work.deadline))
 
-        if self._work.status == WorkRequestStatus(1):
+        if self._work.status == WorkRequest.Status(1):
             self.draftRadioButton.setChecked(True)
-        if self._work.status == WorkRequestStatus(2):
+        if self._work.status == WorkRequest.Status(2):
             self.activeRadioButton.setChecked(True)
-        if self._work.status == WorkRequestStatus(3):
+        if self._work.status == WorkRequest.Status(3):
             self.completedRadioButton.setChecked(True)
 
     def accept(self) -> None:
@@ -277,7 +277,7 @@ class EditWorksDialog(QDialog):
             room_id = session.exec(select(RoomType.id).where(RoomType.name == room)).first()
 
             self._work.description = description
-            self._work.status = WorkRequestStatus(status)
+            self._work.status = WorkRequest.Status(status)
             self._work.event_id = event_id
             self._work.type_id = type_id
             self._work.room_id = room_id

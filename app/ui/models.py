@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Final, Set, Tuple, TypeVar, Generic
+from typing import Any, Callable, Dict, Set, TypeVar, Generic
 
 from PyQt6.QtCore import (
     QObject,
@@ -9,18 +9,14 @@ from PyQt6.QtCore import (
 )
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QMessageBox
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from app.db import ENGINE
 from app.db.models import (
     BaseModel,
     BaseNamedModel,
-    EventType,
     Event,
     WorkRequest,
-    WorkRequestType,
-    RoomType,
-    WorkRequestStatus,
 )
 
 TBaseNamedModel = TypeVar("TBaseNamedModel", bound=BaseNamedModel)
@@ -204,9 +200,9 @@ class WorkRequestTableModel(BaseTableModel[WorkRequest]):
     }
 
     STATUS_COLORS = {
-        WorkRequestStatus.DRAFT: None,
-        WorkRequestStatus.ACTIVE: QColor("lightpink"),
-        WorkRequestStatus.COMPLETED: QColor("lightgray"),
+        WorkRequest.Status.DRAFT: None,
+        WorkRequest.Status.ACTIVE: QColor("lightpink"),
+        WorkRequest.Status.COMPLETED: QColor("lightgray"),
     }
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:

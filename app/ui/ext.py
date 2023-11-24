@@ -11,7 +11,6 @@ from app.db.models import (
     RoomType,
     WorkRequest,
     WorkRequestType,
-    WorkRequestStatus,
 )
 from app.ui.dialogs import (
     TypeManagerDialog,
@@ -84,7 +83,7 @@ class MainWindow(QMainWindow):
             self.desktopTableModel = WorkRequestTableModel(
                 list(
                     filter(
-                        lambda request: request.status == WorkRequestStatus.ACTIVE,
+                        lambda request: request.status == WorkRequest.Status.ACTIVE,
                         workRequests,
                     )
                 )
@@ -103,7 +102,7 @@ class MainWindow(QMainWindow):
             self.desktopTableModel = WorkRequestTableModel(
                 list(
                     filter(
-                        lambda request: request.status == WorkRequestStatus.ACTIVE,
+                        lambda request: request.status == WorkRequest.Status.ACTIVE,
                         workRequests,
                     )
                 )
@@ -191,7 +190,7 @@ class MainWindow(QMainWindow):
             for index in self.desktopTableView.selectionModel().selectedRows():
                 item: WorkRequest = self.desktopTableModel._data[index.row()]
                 workRequest: WorkRequest = session.get(WorkRequest, item.id)
-                workRequest.status = WorkRequestStatus.COMPLETED
+                workRequest.status = WorkRequest.Status.COMPLETED
                 session.add(workRequest)
                 self.desktopTableModel.removeRow(index.row(), delete=False)
             session.commit()

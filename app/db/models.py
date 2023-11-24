@@ -61,17 +61,16 @@ class Event(BaseModel, table=True):
     works: List["WorkRequest"] = Relationship(back_populates="event")
 
 
-class WorkRequestStatus(Enum):
-    DRAFT = 1
-    ACTIVE = 2
-    COMPLETED = 3
-
-
 class WorkRequestType(BaseNamedModel, table=True):
     works: List["WorkRequest"] = Relationship(back_populates="type")
 
 
 class WorkRequest(BaseModel, table=True):
+    class Status(Enum):
+        DRAFT = 1
+        ACTIVE = 2
+        COMPLETED = 3
+    
     description: Optional[str] = Field(default=None, max_length=1028)
 
     event_id: Optional[int] = Field(default=None, foreign_key="event.id")
@@ -86,4 +85,4 @@ class WorkRequest(BaseModel, table=True):
     deadline: datetime = Field(nullable=False)
     created_at: datetime = Field(nullable=False, default_factory=datetime.now)
 
-    status: WorkRequestStatus = Field(nullable=False)
+    status: Status = Field(nullable=False)
