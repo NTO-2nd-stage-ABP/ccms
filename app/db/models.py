@@ -37,6 +37,7 @@ class EventType(BaseNamedModel, table=True):
 
 class RoomType(BaseNamedModel, table=True):
     works: List["WorkRequest"] = Relationship(back_populates="room")
+    events: List["Event"] = Relationship(back_populates="room")
 
 
 class Event(BaseModel, table=True):
@@ -53,7 +54,7 @@ class Event(BaseModel, table=True):
     type: EventType = Relationship(back_populates="events")
 
     room_id: Optional[int] = Field(default=None, foreign_key="roomtype.id")
-    # type: RoomType = Relationship(back_populates="room")
+    room: RoomType = Relationship(back_populates="events")
 
     section: Section
 

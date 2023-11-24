@@ -1,4 +1,4 @@
-from typing import Any, Set, TypeVar, Generic
+from typing import Any, Callable, Dict, Final, Set, Tuple, TypeVar, Generic
 
 from PyQt6.QtCore import (
     QObject,
@@ -12,21 +12,23 @@ from PyQt6.QtWidgets import QMessageBox
 from sqlmodel import Session, select
 
 from app.db import ENGINE
-from app.db.models import BaseNamedModel, EventType, Event, WorkRequest, WorkRequestType, RoomType, WorkRequestStatus
+from app.db.models import (
+    BaseModel,
+    BaseNamedModel,
+    EventType,
+    Event,
+    WorkRequest,
+    WorkRequestType,
+    RoomType,
+    WorkRequestStatus,
+)
 
 TBaseNamedModel = TypeVar("TBaseNamedModel", bound=BaseNamedModel)
+TModel = TypeVar("TModel", bound=BaseModel)
 
-SECTIONS = {
-    1: "Развлечение",
-    2: "Просвещение",
-    3: "Образование"
-}
+SECTIONS = {1: "Развлечение", 2: "Просвещение", 3: "Образование"}
 
-STATUSES = {
-    1: "Черновик",
-    2: "Активно",
-    3: "Выполнено"
-}
+STATUSES = {1: "Черновик", 2: "Активно", 3: "Выполнено"}
 
 
 class TypeListModel(Generic[TBaseNamedModel], QAbstractListModel):
@@ -136,19 +138,13 @@ class TypeListModel(Generic[TBaseNamedModel], QAbstractListModel):
         return self.__orig_class__.__args__[0]
 
 
-class WorkTableModel(QAbstractTableModel):
-    def __init__(self, data: Set[WorkRequest], parent: QObject | None = None) -> None:
+class BaseTableModel(Generic[TModel], QAbstractTableModel):
+    GENERATORS: Dict[str, Callable[[TModel], Any]] | None = None
+
+    def __init__(self, data: Set[TModel], parent: QObject | None = None) -> None:
         super().__init__(parent)
-        self.ddata = data
-        self._headers = (
-            "Помещение",
-            "Разновидность",
-            "Мероприятие",
-            "Статус",
-            "Дедлайн",
-            "Дата создания",
-            "Описание",
-        )
+        self._data = data
+        self._headers = list(self.GENERATORS.keys())
 
     def headerData(
         self, section: int, orientation: Qt.Orientation, role: int = ...
@@ -160,128 +156,83 @@ class WorkTableModel(QAbstractTableModel):
             return self._headers[section]
         return super().headerData(section, orientation, role)
 
-    def data(self, index: QModelIndex, role: int = ...) -> Any:
-        work = self.ddata[index.row()]
-        if role == Qt.ItemDataRole.BackgroundRole:
-            match work.status.value:
-                case 2:
-                    return QColor("lightpink")
-                case 3:
-                    return QColor("lightgray")
-        if role == Qt.ItemDataRole.DisplayRole:
-            match index.column():
-                case 0:
-                    with Session(ENGINE) as session:
-                        return session.exec(
-                            select(RoomType.name).where(RoomType.id == work.room_id)
-                        ).first()
-                case 1:
-                    with Session(ENGINE) as session:
-                        return session.exec(
-                            select(WorkRequestType.name).where(WorkRequestType.id == work.type_id)
-                        ).first()
-                case 2:
-                    with Session(ENGINE) as session:
-                        return session.exec(
-                            select(Event.name).where(Event.id == work.event_id)
-                        ).first()
-                case 3:
-                    return STATUSES[work.status.value]
-                case 4:
-                    return work.deadline.strftime("%d.%m.%Y %H:%M")
-                case 5:
-                    return work.created_at.strftime("%d.%m.%Y %H:%M")
-                case 6:
-                    return work.description
-
-    def removeRow(self, row: int, delete=True, parent: QModelIndex = QModelIndex()) -> bool:
-        self.beginRemoveRows(parent, row, row)
-        with Session(ENGINE) as session:
-            item = self.ddata[row]
-            self.ddata.remove(item)
-            if delete:
-                workType = session.get(WorkRequest, item.id)
-                session.delete(workType)
-                session.commit()            
-        self.endRemoveRows()
-        return True
-
     def rowCount(self, _: QModelIndex = ...) -> int:
-        return len(self.ddata)
+        return len(self._data)
 
     def columnCount(self, _: QModelIndex = ...) -> int:
         return len(self._headers)
 
-    def flags(self, _: QModelIndex) -> Qt.ItemFlag:
-        return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
 
-
-class EventTableModel(QAbstractTableModel):
-    def __init__(self, parent: QObject | None = None) -> None:
-        super().__init__(parent)
-        with Session(ENGINE) as session:
-            self.ddata = session.exec(select(Event)).all()
-        self.__headers = (
-            "Заголовок",
-            "Пространство",
-            "Разновидность",
-            "Помещение",
-            "Дата начала",
-            "Описание",
-        )
-
-    def headerData(
-        self, section: int, orientation: Qt.Orientation, role: int = ...
-    ) -> Any:
-        if (
-            orientation == Qt.Orientation.Horizontal
-            and role == Qt.ItemDataRole.DisplayRole
-        ):
-            return self.__headers[section]
-        return super().headerData(section, orientation, role)
+class EventTableModel(BaseTableModel[Event]):
+    GENERATORS = {
+        "Заголовок": lambda e: e.name,
+        "Пространство": lambda e: SECTIONS[e.section.value],
+        "Разновидность": lambda e: e.type.name,
+        "Помещение": lambda e: e.room.name,
+        "Дата начала": lambda e: e.start_at.strftime("%d.%m.%Y %H:%M"),
+        "Описание": lambda e: e.description,
+    }
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:
         if role == Qt.ItemDataRole.DisplayRole:
-            event = self.ddata[index.row()]
-            match index.column():
-                case 0:
-                    return event.name
-                case 1:
-                    return SECTIONS[event.section.value]
-                case 2:
-                    with Session(ENGINE) as session:
-                        return session.exec(
-                            select(EventType.name).where(EventType.id == event.type_id)
-                        ).first()
-                case 3:
-                    with Session(ENGINE) as session:
-                        return session.exec(
-                            select(RoomType.name).where(RoomType.id == event.room_id)
-                        ).first()
-                case 4:
-                    return event.start_at.strftime("%d.%m.%Y %H:%M")
-                case 5:
-                    return event.description
+            event = self._data[index.row()]
+            with Session(ENGINE) as session:
+                session.add(event)
+                return list(self.GENERATORS.values())[index.column()](event)
 
     def removeRow(self, row: int, parent: QModelIndex = QModelIndex()) -> bool:
         self.beginRemoveRows(parent, row, row)
         with Session(ENGINE) as session:
-            item = self.ddata[row]
+            item = self._data[row]
             eventType = session.get(Event, item.id)
             session.delete(eventType)
-            self.ddata.remove(item)
+            self._data.remove(item)
             session.commit()
         self.endRemoveRows()
         return True
 
-    def rowCount(self, _: QModelIndex = ...) -> int:
-        return len(self.ddata)
 
-    def columnCount(self, _: QModelIndex = ...) -> int:
-        return len(self.__headers)
+class WorkRequestTableModel(BaseTableModel[WorkRequest]):
+    GENERATORS = {
+        "Помещение": lambda r: r.room.name,
+        "Разновидность": lambda r: r.type.name,
+        "Мероприятие": lambda r: r.event.name,
+        "Статус": lambda r: STATUSES[r.status.value],
+        "Дедлайн": lambda r: r.deadline.strftime("%d.%m.%Y %H:%M"),
+        "Дата создания": lambda r: r.created_at.strftime("%d.%m.%Y %H:%M"),
+        "Описание": lambda r: r.description,
+    }
 
-    def flags(self, _: QModelIndex) -> Qt.ItemFlag:
-        return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
+    STATUS_COLORS = {
+        WorkRequestStatus.DRAFT: None,
+        WorkRequestStatus.ACTIVE: QColor("lightpink"),
+        WorkRequestStatus.COMPLETED: QColor("lightgray"),
+    }
+
+    def data(self, index: QModelIndex, role: int = ...) -> Any:
+        workRequest: WorkRequest = self._data[index.row()]
+
+        if role == Qt.ItemDataRole.BackgroundRole:
+            return self.STATUS_COLORS[workRequest.status]
+
+        if role == Qt.ItemDataRole.DisplayRole:
+            with Session(ENGINE) as session:
+                session.add(workRequest)
+                return list(self.GENERATORS.values())[index.column()](workRequest)
+
+    def removeRow(
+        self, row: int, delete=True, parent: QModelIndex = QModelIndex()
+    ) -> bool:
+        self.beginRemoveRows(parent, row, row)
+        with Session(ENGINE) as session:
+            item = self._data[row]
+            self._data.remove(item)
+            if delete:
+                workType = session.get(WorkRequest, item.id)
+                session.delete(workType)
+                session.commit()
+        self.endRemoveRows()
+        return True
 
 
-__all__ = ["TypeListModel", "EventTableModel", "WorkTableModel"]
+__all__ = ["TypeListModel", "EventTableModel", "WorkRequestTableModel"]

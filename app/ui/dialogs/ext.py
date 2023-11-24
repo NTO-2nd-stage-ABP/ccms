@@ -5,6 +5,7 @@ from sqlmodel import Session, select
 
 from app.db import ENGINE
 from app.db.models import EventType, Event, WorkRequestType, RoomType, Section, WorkRequest, WorkRequestStatus
+from app.ui.dialogs.alerts import validationError
 from app.ui.models import TypeListModel
 
 
@@ -31,10 +32,6 @@ class TypeManagerDialog(QDialog):
     def onAddButtonClicked(self) -> None:
         self.listViewModel.insertRow(-1)
         index = self.listViewModel.index(self.listViewModel.rowCount() - 1, 0)
-
-        # Access or modify the data in the index
-        # data = index.data()
-
         self.listView.edit(index)
 
     def onDelButtonClicked(self) -> None:
@@ -60,9 +57,7 @@ class CreateEventDialog(QDialog):
         title = self.titleLineEdit.text()
 
         if not title:
-            QMessageBox.warning(
-                self, "Ошибка проверки", "Название мероприятия должно быть заполнено!"
-            )
+            validationError(self, "Название мероприятия должно быть заполнено!")
             return
 
         date = self.dateDateTimeEdit.dateTime().toPyDateTime()
@@ -75,9 +70,7 @@ class CreateEventDialog(QDialog):
         elif self.enlightenmentRadioButton.isChecked():
             section_id = 1
         else:
-            QMessageBox.warning(
-                self, "Ошибка валидации", "Создание мероприятий в этом пространстве временно недоступно"
-            )
+            validationError(self, "Создание мероприятий в этом пространстве временно недоступно")
             return
 
         with Session(ENGINE) as session:
@@ -191,7 +184,6 @@ class CreateWorkDialog(QDialog):
             roomTypeNames = session.exec(select(RoomType.name)).all()
             eventNames = session.exec(select(Event.name)).all()
 
-
         self.typeComboBox.addItems(eventTypeName for eventTypeName in workTypeNames)
         self.roomComboBox.addItems(eventTypeName for eventTypeName in roomTypeNames)
         self.eventComboBox.addItems(eventTypeName for eventTypeName in eventNames)
@@ -211,7 +203,7 @@ class CreateWorkDialog(QDialog):
             status = 3
 
         with Session(ENGINE) as session:
-            event_id = session.exec(select(EventType.id).where(EventType.name == event)).first()
+            event_id = session.exec(select(Event.id).where(Event.name == event)).first()
             type_id = session.exec(select(WorkRequestType.id).where(WorkRequestType.name == work_type_name)).first()
             room_id = session.exec(select(RoomType.id).where(RoomType.name == room)).first()
 
@@ -280,7 +272,7 @@ class EditWorksDialog(QDialog):
             status = 3
 
         with Session(ENGINE) as session:
-            event_id = session.exec(select(EventType.id).where(EventType.name == event)).first()
+            event_id = session.exec(select(Event.id).where(Event.name == event)).first()
             type_id = session.exec(select(WorkRequestType.id).where(WorkRequestType.name == work_type_name)).first()
             room_id = session.exec(select(RoomType.id).where(RoomType.name == room)).first()
 

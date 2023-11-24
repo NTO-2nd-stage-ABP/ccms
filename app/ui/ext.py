@@ -6,6 +6,7 @@ from sqlmodel import Session, select
 
 from app.db import ENGINE
 from app.db.models import (
+    Event,
     EventType,
     RoomType,
     WorkRequest,
@@ -19,7 +20,7 @@ from app.ui.dialogs import (
     CreateWorkDialog,
 )
 from app.ui.dialogs.ext import EditWorksDialog
-from app.ui.models import EventTableModel, WorkTableModel
+from app.ui.models import EventTableModel, WorkRequestTableModel
 
 
 class MainWindow(QMainWindow):
@@ -80,7 +81,7 @@ class MainWindow(QMainWindow):
     def refreshDesktop(self):
         with Session(ENGINE) as session:
             workRequests: Set[WorkRequest] = session.exec(select(WorkRequest)).all()
-            self.desktopTableModel = WorkTableModel(
+            self.desktopTableModel = WorkRequestTableModel(
                 list(
                     filter(
                         lambda request: request.status == WorkRequestStatus.ACTIVE,
@@ -95,11 +96,11 @@ class MainWindow(QMainWindow):
         
 
     def refreshTableViews(self):
-        self.eventsTableModel = EventTableModel()
         with Session(ENGINE) as session:
+            events = session.exec(select(Event)).all()
             workRequests: Set[WorkRequest] = session.exec(select(WorkRequest)).all()
-            self.worksTableModel = WorkTableModel(workRequests)
-            self.desktopTableModel = WorkTableModel(
+            self.worksTableModel = WorkRequestTableModel(workRequests)
+            self.desktopTableModel = WorkRequestTableModel(
                 list(
                     filter(
                         lambda request: request.status == WorkRequestStatus.ACTIVE,
@@ -107,6 +108,7 @@ class MainWindow(QMainWindow):
                     )
                 )
             )
+            self.eventsTableModel = EventTableModel(events)
 
         self.eventsTableView.setModel(self.eventsTableModel)
         self.worksTableView.setModel(self.worksTableModel)
@@ -136,12 +138,12 @@ class MainWindow(QMainWindow):
 
     def onEditSelectedEventsPushButtonClicked(self):
         index = self.eventsTableView.selectedIndexes()[0].row()
-        dlg = EditEventDialog(self.eventsTableModel.ddata[index])
+        dlg = EditEventDialog(self.eventsTableModel._data[index])
         dlg.exec()
 
     def onEditSelectedWorksPushButtonClicked(self):
         index = self.worksTableView.selectedIndexes()[0].row()
-        dlg = EditWorksDialog(self.worksTableModel.ddata[index])
+        dlg = EditWorksDialog(self.worksTableModel._data[index])
         dlg.exec()
         self.refreshDesktop()
 
@@ -187,7 +189,7 @@ class MainWindow(QMainWindow):
     def onCompleteSelectedWorksPushButtonClicked(self):
         with Session(ENGINE) as session:    
             for index in self.desktopTableView.selectionModel().selectedRows():
-                item: WorkRequest = self.desktopTableModel.ddata[index.row()]
+                item: WorkRequest = self.desktopTableModel._data[index.row()]
                 workRequest: WorkRequest = session.get(WorkRequest, item.id)
                 workRequest.status = WorkRequestStatus.COMPLETED
                 session.add(workRequest)
