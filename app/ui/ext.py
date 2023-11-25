@@ -122,6 +122,7 @@ class MainWindow(QMainWindow):
             self.onDesktopTableViewSelectionChanged
         )
         self.completeSelectedDesktopPushButton.setEnabled(False)
+        self.onDesktopTableViewSelectionChanged()
         
     # def refreshWorkRequests(self, *args, where=None):
 
@@ -151,6 +152,8 @@ class MainWindow(QMainWindow):
         self.editSelectedEventsPushButton.setEnabled(False)
         self.editSelectedWorksPushButton.setEnabled(False)
         self.deleteSelectedWorksPushButton.setEnabled(False)
+        self.onWorkTableViewSelectionChanged()
+        self.onEventsTableViewSelectionChanged()
 
     def onEditSelectedEventsPushButtonClicked(self):
         index = self.eventsTableView.selectedIndexes()[0].row()
