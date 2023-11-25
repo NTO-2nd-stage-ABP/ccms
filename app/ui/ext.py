@@ -21,6 +21,7 @@ from app.ui.dialogs import (
 )
 from app.ui.dialogs.ext import EditWorksDialog
 from app.ui.models import SECTIONS, EventTableModel, WorkRequestTableModel
+from app.ui.widgets import Ui_Form
 
 
 class Table(QWidget):
@@ -71,7 +72,7 @@ class MainWindow(QMainWindow):
         
         self.comboBox.addItems(section for section in SECTIONS.values())
         self.comboBox.currentTextChanged.connect(self.filterByWorkSection)
-        self.pushButton.clicked.connect(self.refreshTableViews)
+        self.pushButton_4.clicked.connect(self.refreshTableViews)
 
     def showTypeManagerDialog(self, _type, title):
         TypeManagerDialog(_type, title).exec()

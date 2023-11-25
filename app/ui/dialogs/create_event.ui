@@ -6,11 +6,11 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>467</width>
-    <height>483</height>
+    <width>400</width>
+    <height>450</height>
    </rect>
   </property>
-  <property name="windowTitle">
+  <property name="windowTitle"> 
    <string>Создание мероприятия</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
@@ -170,7 +170,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Help|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
    </item>
