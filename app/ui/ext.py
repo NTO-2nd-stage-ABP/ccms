@@ -11,6 +11,7 @@ from app.db.models import (
     RoomType,
     WorkRequest,
     WorkRequestType,
+    Section
 )
 from app.ui.dialogs import (
     TypeManagerDialog,
@@ -19,7 +20,7 @@ from app.ui.dialogs import (
     CreateWorkDialog,
 )
 from app.ui.dialogs.ext import EditWorksDialog
-from app.ui.models import EventTableModel, WorkRequestTableModel
+from app.ui.models import SECTIONS, EventTableModel, WorkRequestTableModel
 
 
 class Table(QWidget):
@@ -67,10 +68,18 @@ class MainWindow(QMainWindow):
         self.comboBox_12.addItems(workTypeName for workTypeName in workTypeNames)
         self.comboBox_12.currentTextChanged.connect(self.filterByWorkTypeName)
         self.resetDesktopFilterButton.clicked.connect(self.refreshDesktop)
+        
+        self.comboBox.addItems(section for section in SECTIONS.values())
+        self.comboBox.currentTextChanged.connect(self.filterByWorkSection)
+        self.pushButton.clicked.connect(self.refreshTableViews)
 
     def showTypeManagerDialog(self, _type, title):
         TypeManagerDialog(_type, title).exec()
         self.refreshTableViews()
+        
+    def filterByWorkSection(self):
+        name = self.comboBox.currentText()
+        self.refreshTableViews(events_where=(Event.section == Section(list(SECTIONS.values()).index(name) + 1)))
 
     def filterByWorkTypeName(self):
         name = self.comboBox_12.currentText()
@@ -96,11 +105,14 @@ class MainWindow(QMainWindow):
         
     # def refreshWorkRequests(self, *args, where=None):
 
-    def refreshTableViews(self):
+    def refreshTableViews(self, *args, events_where=None):
         self.refreshDesktop()
 
         with Session(ENGINE) as session:
-            events = session.exec(select(Event)).all()
+            statement = select(Event)
+            if events_where is not None:
+                statement = statement.where(events_where)
+            events = session.exec(statement).all()
             workRequests: Set[WorkRequest] = session.exec(select(WorkRequest)).all()
             self.worksTableModel = WorkRequestTableModel(workRequests)
             self.eventsTableModel = EventTableModel(events)
