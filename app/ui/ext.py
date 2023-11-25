@@ -67,20 +67,38 @@ class MainWindow(QMainWindow):
             workTypeNames = session.exec(select(WorkRequestType.name)).all()
 
         self.comboBox_12.addItems(workTypeName for workTypeName in workTypeNames)
-        self.comboBox_12.currentTextChanged.connect(self.filterByWorkTypeName)
-        self.resetDesktopFilterButton.clicked.connect(self.refreshDesktop)
+        self.pushButton_2.clicked.connect(self.filterByWorkTypeName)
+        self.resetDesktopFilterButton.clicked.connect(self.resetDesktopFilter)
         
         self.comboBox.addItems(section for section in SECTIONS.values())
-        self.comboBox.currentTextChanged.connect(self.filterByWorkSection)
-        self.pushButton_4.clicked.connect(self.refreshTableViews)
+        self.pushButton_3.clicked.connect(self.filterByWorkSection)
+        self.pushButton_4.clicked.connect(self.resetEventsFilter)
 
     def showTypeManagerDialog(self, _type, title):
         TypeManagerDialog(_type, title).exec()
         self.refreshTableViews()
+    
+    events_filter = None
+    work_requests_filter = None
         
+    def resetDesktopFilter(self):
+        self.work_requests_filter = None
+        self.comboBox_12.blockSignals(True)
+        self.comboBox_12.setCurrentIndex(0)
+        self.comboBox_12.blockSignals(False)
+        self.refreshDesktop()
+        
+    def resetEventsFilter(self):
+        self.events_filter = None
+        self.comboBox.blockSignals(True)
+        self.comboBox.setCurrentIndex(0)
+        self.comboBox.blockSignals(False)
+        self.refreshTableViews()
+    
     def filterByWorkSection(self):
         name = self.comboBox.currentText()
-        self.refreshTableViews(events_where=(Event.section == Section(list(SECTIONS.values()).index(name) + 1)))
+        self.events_filter = (Event.section == Section(list(SECTIONS.values()).index(name) + 1))
+        self.refreshTableViews()
 
     def filterByWorkTypeName(self):
         name = self.comboBox_12.currentText()
@@ -88,13 +106,14 @@ class MainWindow(QMainWindow):
             type_id = session.exec(
                 select(WorkRequestType.id).where(WorkRequestType.name == name)
             ).first()
-        self.refreshDesktop(where=WorkRequest.type_id == type_id)
+        self.work_requests_filter = (WorkRequest.type_id == type_id)
+        self.refreshDesktop()
 
-    def refreshDesktop(self, *args, where=None):
+    def refreshDesktop(self):
         with Session(ENGINE) as session:
             statement = select(WorkRequest).where(WorkRequest.status == WorkRequest.Status.ACTIVE)
-            if where is not None:
-                statement = statement.where(where)
+            if self.work_requests_filter is not None:
+                statement = statement.where(self.work_requests_filter)
             data: Set[WorkRequest] = session.exec(statement).all()
 
         self.desktopTableModel = WorkRequestTableModel(data)
@@ -106,13 +125,13 @@ class MainWindow(QMainWindow):
         
     # def refreshWorkRequests(self, *args, where=None):
 
-    def refreshTableViews(self, *args, events_where=None):
+    def refreshTableViews(self, *args):
         self.refreshDesktop()
 
         with Session(ENGINE) as session:
             statement = select(Event)
-            if events_where is not None:
-                statement = statement.where(events_where)
+            if self.events_filter is not None:
+                statement = statement.where(self.events_filter)
             events = session.exec(statement).all()
             workRequests: Set[WorkRequest] = session.exec(select(WorkRequest)).all()
             self.worksTableModel = WorkRequestTableModel(workRequests)
