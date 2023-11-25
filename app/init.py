@@ -1,6 +1,7 @@
 import sys
 
 from PyQt6.QtGui import QIcon
+from PyQt6.QtCore import QTranslator, QLocale, QLibraryInfo
 from PyQt6.QtWidgets import QApplication
 
 from app.db import ENGINE
@@ -19,6 +20,10 @@ def run() -> int:
 
     app: QApplication = QApplication(sys.argv)
     app.setWindowIcon(QIcon("app/ui/resourses/icon.ico"))
+
+    translator = QTranslator(app)
+    if translator.load(QLocale(QLocale.Language.Russian), "qtbase", "_", QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath)):
+        app.installTranslator(translator)
 
     window: MainWindow = MainWindow()
     window.show()
