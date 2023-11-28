@@ -19,7 +19,7 @@ def run() -> int:
     BaseModel.metadata.create_all(ENGINE)
 
     app: QApplication = QApplication(sys.argv)
-    app.setWindowIcon(QIcon("app/ui/resourses/icon.ico"))
+    app.setWindowIcon(QIcon("app/ui/resourses/favicon.ico"))
 
     translator = QTranslator(app)
     if translator.load(QLocale(QLocale.Language.Russian), "qtbase", "_", QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath)):

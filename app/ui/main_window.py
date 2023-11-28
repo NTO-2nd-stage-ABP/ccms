@@ -8,10 +8,10 @@ from app.db import ENGINE
 from app.db.models import (
     Event,
     EventType,
-    RoomType,
-    WorkRequest,
-    WorkRequestType,
-    Section
+    Place,
+    Assignment,
+    AssignmentType,
+    Scope
 )
 from app.ui.dialogs import (
     TypeManagerDialog,
@@ -22,6 +22,7 @@ from app.ui.dialogs import (
 from app.ui.dialogs.ext import EditWorksDialog
 from app.ui.models import SECTIONS, EventTableModel, WorkRequestTableModel
 from app.ui.widgets import Ui_Form
+from app.ui.wizards.reservation import ReservationWizard
 
 
 class Table(QWidget):
@@ -49,8 +50,8 @@ class MainWindow(QMainWindow):
         self.refreshTableViews()
         
         self.eventsTypeMaximizePushButton.clicked.connect(lambda: self.showTypeManagerDialog(EventType, "Виды мероприятий:"))
-        self.worksTypeMaximizePushButton.clicked.connect(lambda: self.showTypeManagerDialog(WorkRequestType, "Виды работ:"))
-        self.action_2.triggered.connect(lambda: self.showTypeManagerDialog(RoomType, "Помещения:"))
+        self.worksTypeMaximizePushButton.clicked.connect(lambda: self.showTypeManagerDialog(AssignmentType, "Виды работ:"))
+        self.action_2.triggered.connect(lambda: self.showTypeManagerDialog(Place, "Помещения:"))
 
         self.newEventPushButton.clicked.connect(lambda: self.onCreateClicked(CreateEventDialog()))
         self.newWorkPushButton.clicked.connect(lambda: self.onCreateClicked(CreateWorkDialog()))
@@ -64,7 +65,7 @@ class MainWindow(QMainWindow):
         self.completeSelectedDesktopPushButton.clicked.connect(self.onCompleteSelectedWorksPushButtonClicked)
 
         with Session(ENGINE) as session:
-            workTypeNames = session.exec(select(WorkRequestType.name)).all()
+            workTypeNames = session.exec(select(AssignmentType.name)).all()
 
         self.comboBox_12.addItems(workTypeName for workTypeName in workTypeNames)
         self.pushButton_2.clicked.connect(self.filterByWorkTypeName)
@@ -73,6 +74,7 @@ class MainWindow(QMainWindow):
         self.comboBox.addItems(section for section in SECTIONS.values())
         self.pushButton_3.clicked.connect(self.filterByWorkSection)
         self.pushButton_4.clicked.connect(self.resetEventsFilter)
+        self.action_3.triggered.connect(lambda: ReservationWizard().exec())
 
     def showTypeManagerDialog(self, _type, title):
         TypeManagerDialog(_type, title).exec()
@@ -97,24 +99,24 @@ class MainWindow(QMainWindow):
     
     def filterByWorkSection(self):
         name = self.comboBox.currentText()
-        self.events_filter = (Event.section == Section(list(SECTIONS.values()).index(name) + 1))
+        self.events_filter = (Event.scope == Scope(list(SECTIONS.values()).index(name) + 1))
         self.refreshTableViews()
 
     def filterByWorkTypeName(self):
         name = self.comboBox_12.currentText()
         with Session(ENGINE) as session:
             type_id = session.exec(
-                select(WorkRequestType.id).where(WorkRequestType.name == name)
+                select(AssignmentType.id).where(AssignmentType.name == name)
             ).first()
-        self.work_requests_filter = (WorkRequest.type_id == type_id)
+        self.work_requests_filter = (Assignment.type_id == type_id)
         self.refreshDesktop()
 
     def refreshDesktop(self):
         with Session(ENGINE) as session:
-            statement = select(WorkRequest).where(WorkRequest.status == WorkRequest.Status.ACTIVE)
+            statement = select(Assignment).where(Assignment.state == Assignment.State.ACTIVE)
             if self.work_requests_filter is not None:
                 statement = statement.where(self.work_requests_filter)
-            data: Set[WorkRequest] = session.exec(statement).all()
+            data: Set[Assignment] = session.exec(statement).all()
 
         self.desktopTableModel = WorkRequestTableModel(data)
         self.desktopTableView.setModel(self.desktopTableModel)
@@ -134,7 +136,7 @@ class MainWindow(QMainWindow):
             if self.events_filter is not None:
                 statement = statement.where(self.events_filter)
             events = session.exec(statement).all()
-            workRequests: Set[WorkRequest] = session.exec(select(WorkRequest)).all()
+            workRequests: Set[Assignment] = session.exec(select(Assignment)).all()
             self.worksTableModel = WorkRequestTableModel(workRequests)
             self.eventsTableModel = EventTableModel(events)
 
@@ -207,9 +209,9 @@ class MainWindow(QMainWindow):
     def onCompleteSelectedWorksPushButtonClicked(self):
         with Session(ENGINE) as session:
             for index in self.desktopTableView.selectionModel().selectedRows():
-                item: WorkRequest = self.desktopTableModel._data[index.row()]
-                workRequest: WorkRequest = session.get(WorkRequest, item.id)
-                workRequest.status = WorkRequest.Status.COMPLETED
+                item: Assignment = self.desktopTableModel._data[index.row()]
+                workRequest: Assignment = session.get(Assignment, item.id)
+                workRequest.state = Assignment.State.COMPLETED
                 session.add(workRequest)
                 self.desktopTableModel.removeRow(index.row(), delete=False)
             session.commit()
@@ -220,18 +222,17 @@ class MainWindow(QMainWindow):
         self.refreshTableViews()
         
     def onDeleteRowsClicked(self, tableView: QTableView):
-        if self.showConfirmationWarning() != QMessageBox.StandardButton.Ok:
+        if self.showConfirmationWarning() == QMessageBox.StandardButton.No:
             return
 
         for index in tableView.selectionModel().selectedRows():
             tableView.model().removeRow(index.row())
 
     def showConfirmationWarning(self):
-        return QMessageBox.warning(
+        return QMessageBox.question(
             self.parent(),
             "Удаление объектов",
             "Вы действительно хотите удалить выбранные объекты?",
-            defaultButton=QMessageBox.StandardButton.Cancel,
         )
 
 

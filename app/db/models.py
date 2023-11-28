@@ -1,88 +1,196 @@
-from datetime import datetime
-from enum import Enum
+from enum import Enum, auto
 from typing import Optional, List
+from datetime import datetime
 
 from sqlmodel import SQLModel, Field, Relationship
+from sqlalchemy.orm import declared_attr
 
 
-class Section(Enum):
+class Scope(Enum):
     """
-    Represents a section to categorize events.
+    Represents a scope to categorize events.
     """
 
-    ENTERTAINMENT = 1
-    ENLIGHTENMENT = 2
-    EDUCATION = 3
+    ENTERTAINMENT = auto()
+    ENLIGHTENMENT = auto()
+    EDUCATION = auto()
 
 
 class BaseModel(SQLModel):
+    """A base model for database entities.
+
+    Attributes:
+        id (Optional[int]): The unique identifier for this object.
+        created_at (datetime): The identity date and time for this object.
+        updated_at (datetime): The computed date and time for this object.
     """
-    Represents the base for defining models.
+
+    id: int = Field(primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.now)
+
+    @declared_attr  # type: ignore
+    def __tablename__(cls) -> str:
+        return cls.__name__
+
+
+class UniqueNamedModel(BaseModel):
+    """A base model for unique named entities.
+
+    Attributes:
+        name (str): The unique name of this object.
     """
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(max_length=128, unique=True, index=True)
 
 
-class BaseNamedModel(BaseModel):
-    name: str = Field(nullable=False, unique=True, max_length=128, index=True)
+class Place(UniqueNamedModel, table=True):
+    """A class representing a place.
 
-
-class EventType(BaseNamedModel, table=True):
+    Attributes:
+        areas (List[Area]): The list of areas associated with this place.
+        events (List[Event]): The list of events associated with this place.
+        assignments (List[Assignment]): The list of assignments associated with this place.
+        reservations (List[Reservation]): The list of reservations associated with this place.
     """
-    Represents the type of an event.
+
+    areas: List["Area"] = Relationship(back_populates="place")
+    events: List["Event"] = Relationship(back_populates="place")
+    assignments: List["Assignment"] = Relationship(back_populates="place")
+    reservations: List["Reservation"] = Relationship(back_populates="place")
+
+
+class EventType(UniqueNamedModel, table=True):
+    """A class representing an event type.
+
+    Attributes:
+        events (List[Event]): The list of events associated with this event type.
     """
 
     events: List["Event"] = Relationship(back_populates="type")
 
 
-class RoomType(BaseNamedModel, table=True):
-    works: List["WorkRequest"] = Relationship(back_populates="room")
-    events: List["Event"] = Relationship(back_populates="room")
-
-
 class Event(BaseModel, table=True):
     """
     Represents an event registered on a specific date.
+
+    Attributes:
+        title (str): The title of the event.
+        description (Optional[str]): The description of the event.
+        start_at (datetime): The start date and time of the event.
+        scope (Scope): The scope of the event.
+        type_id (Optional[int]): The unique identifier of the associated event type.
+        type (Optional[EventType]): The event type associated with this event.
+        place_id (Optional[int]): The unique identifier of the associated place.
+        place (Optional[Place]): The associated place of the event.
+        areas (List[Area]): The list of areas associated with this event.
+        assignments (List[Assignment]): The list of assignments associated with this event.
+        reservations (List[Reservation]): The list of reservations associated with this event.
     """
 
-    name: str = Field(max_length=256)
+    title: str = Field(max_length=256, index=True)
+    description: Optional[str] = Field(default=None, max_length=1028)
     start_at: datetime
-    created_at: datetime = Field(nullable=False, default_factory=datetime.now)
+    scope: Scope
+
+    type_id: Optional[int] = Field(default=None, foreign_key="EventType.id")
+    type: Optional[EventType] = Relationship(back_populates="events")
+
+    place_id: Optional[int] = Field(default=None, foreign_key="Place.id")
+    place: Optional[Place] = Relationship(back_populates="events")
+
+    areas: List["Area"] = Relationship(back_populates="event")
+    assignments: List["Assignment"] = Relationship(back_populates="event")
+    reservations: List["Reservation"] = Relationship(back_populates="event")
+
+
+class AssignmentType(UniqueNamedModel, table=True):
+    """A class representing an assignment type.
+
+    Attributes:
+        assignments (List[Assignment]): The list of assignments associated with this assignment type.
+    """
+
+    assignments: List["Assignment"] = Relationship(back_populates="type")
+
+
+class Assignment(BaseModel, table=True):
+    """A class representing an assignment to an event.
+
+    Attributes:
+        state (State): The state of this assignment.
+        deadline (datetime): The deadline of this assignment.
+        description (Optional[str]): The description of this assignment.
+        event_id (Optional[int]): The unique identifier of the associated event.
+        event (Event): The event associated with this assignment.
+        type_id (Optional[int]): The unique identifier of the assignment type.
+        type (AssignmentType): The assignment type object.
+        place_id (Optional[int]): The unique identifier of the associated place.
+        place (Place): The place associated with this assignment.
+    """
+
+    class State(Enum):
+        """Enumeration representing the state of an assignment.
+
+        Attributes:
+            DRAFT: The assignment is in the draft state.
+            ACTIVE: The assignment is active at the moment.
+            COMPLETED: The assignment has been marked as completed.
+        """
+
+        DRAFT = auto()
+        ACTIVE = auto()
+        COMPLETED = auto()
+
+    state: State = State.DRAFT
+    deadline: datetime
     description: Optional[str] = Field(default=None, max_length=1028)
 
-    type_id: Optional[int] = Field(default=None, foreign_key="eventtype.id")
-    type: EventType = Relationship(back_populates="events")
+    type_id: Optional[int] = Field(default=None, foreign_key="AssignmentType.id")
+    type: Optional[AssignmentType] = Relationship(back_populates="assignments")
 
-    room_id: Optional[int] = Field(default=None, foreign_key="roomtype.id")
-    room: RoomType = Relationship(back_populates="events")
+    place_id: Optional[int] = Field(default=None, foreign_key="Place.id")
+    place: Optional[Place] = Relationship(back_populates="assignments")
 
-    section: Section
-
-    works: List["WorkRequest"] = Relationship(back_populates="event")
-
-
-class WorkRequestType(BaseNamedModel, table=True):
-    works: List["WorkRequest"] = Relationship(back_populates="type")
+    event_id: Optional[int] = Field(default=None, foreign_key="Event.id")
+    event: Optional[Event] = Relationship(back_populates="assignments")
 
 
-class WorkRequest(BaseModel, table=True):
-    class Status(Enum):
-        DRAFT = 1
-        ACTIVE = 2
-        COMPLETED = 3
+class Area(UniqueNamedModel, table=True):
+    """A class representing a part of a place.
 
-    description: Optional[str] = Field(default=None, max_length=1028)
+    Attributes:
+        place_id (Optional[int]): The unique identifier of the associated place.
+        place (Optional[Place]): The place associated with this area.
+        event_id (Optional[int]): The unique identifier of the associated event.
+        event (Optional[Event]): The event associated with this area.
+    """
 
-    event_id: Optional[int] = Field(default=None, foreign_key="event.id")
-    event: Event = Relationship(back_populates="works")
+    place_id: Optional[int] = Field(default=None, foreign_key="Place.id")
+    place: Optional[Place] = Relationship(back_populates="areas")
 
-    type_id: Optional[int] = Field(default=None, foreign_key="workrequesttype.id")
-    type: WorkRequestType = Relationship(back_populates="works")
+    event_id: Optional[int] = Field(default=None, foreign_key="Event.id")
+    event: Optional[Event] = Relationship(back_populates="areas")
 
-    room_id: Optional[int] = Field(default=None, foreign_key="roomtype.id")
-    room: RoomType = Relationship(back_populates="works")
 
-    deadline: datetime = Field(nullable=False)
-    created_at: datetime = Field(nullable=False, default_factory=datetime.now)
+class Reservation(BaseModel, table=True):
+    """A class representing a place reservation for an event.
 
-    status: Status = Field(nullable=False)
+    Attributes:
+        start_at (datetime): The start time of the reservation.
+        end_at (datetime): The end time of the reservation.
+        comment (Optional[str]): An optional comment for the reservation.
+        place_id (Optional[int]): The unique identifier of the associated place.
+        place (Place): The place associated with this reservation.
+        event_id (Optional[int]): The unique identifier of the associated event.
+        event (Event): The event associated with this reservation.
+    """
+
+    start_at: datetime
+    end_at: datetime
+    comment: Optional[str] = Field(default=None, max_length=1028)
+
+    place_id: Optional[int] = Field(default=None, foreign_key="Place.id")
+    place: Place = Relationship(back_populates="reservations")
+
+    event_id: Optional[int] = Field(default=None, foreign_key="Event.id")
+    event: Event = Relationship(back_populates="reservations")

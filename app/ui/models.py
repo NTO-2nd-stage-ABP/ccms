@@ -12,9 +12,9 @@ from PyQt6.QtWidgets import QMessageBox
 from sqlmodel import Session
 
 from app.db import ENGINE
-from app.db.models import BaseModel, BaseNamedModel, Event, WorkRequest
+from app.db.models import BaseModel, UniqueNamedModel, Event, Assignment
 
-TBaseNamedModel = TypeVar("TBaseNamedModel", bound=BaseNamedModel)
+TBaseNamedModel = TypeVar("TBaseNamedModel", bound=UniqueNamedModel)
 TModel = TypeVar("TModel", bound=BaseModel)
 
 SECTIONS = {1: "Развлечение", 2: "Просвещение", 3: "Образование"}
@@ -205,7 +205,7 @@ class EventTableModel(BaseTableModel[Event]):
     }
 
 
-class WorkRequestTableModel(BaseTableModel[WorkRequest]):
+class WorkRequestTableModel(BaseTableModel[Assignment]):
     GENERATORS = {
         "Помещение": lambda r: r.room.name if r.room else None,
         "Разновидность": lambda r: r.type.name,
@@ -217,17 +217,17 @@ class WorkRequestTableModel(BaseTableModel[WorkRequest]):
     }
 
     STATUS_COLORS = {
-        WorkRequest.Status.DRAFT: None,
-        WorkRequest.Status.ACTIVE: QColor("lightpink"),
-        WorkRequest.Status.COMPLETED: QColor("lightgray"),
+        Assignment.State.DRAFT: None,
+        Assignment.State.ACTIVE: QColor("lightpink"),
+        Assignment.State.COMPLETED: QColor("lightgray"),
     }
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:
         if role != Qt.ItemDataRole.BackgroundRole:
             return super().data(index, role)
 
-        workRequest: WorkRequest = self._data[index.row()]
-        return self.STATUS_COLORS[workRequest.status]
+        workRequest: Assignment = self._data[index.row()]
+        return self.STATUS_COLORS[workRequest.state]
 
 
 __all__ = ["TypeListModel", "EventTableModel", "WorkRequestTableModel"]
