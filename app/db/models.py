@@ -7,8 +7,12 @@ from sqlalchemy.orm import declared_attr
 
 
 class Scope(Enum):
-    """
-    Represents a scope to categorize events.
+    """Represents a scope to categorize events.
+
+    Attributes:
+        ENTERTAINMENT: The entertainment scope.
+        ENLIGHTENMENT: The enlightenment scope.
+        EDUCATION: The ignored scope at the moment.
     """
 
     ENTERTAINMENT = auto()
