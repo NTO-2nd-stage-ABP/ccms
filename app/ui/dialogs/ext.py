@@ -1,10 +1,10 @@
 from PyQt6 import uic
 from PyQt6.QtCore import QDateTime
-from PyQt6.QtWidgets import QDialog, QMessageBox
+from PyQt6.QtWidgets import QDialog, QMessageBox, QComboBox
 from sqlmodel import Session, select
 
 from app.db import ENGINE
-from app.db.models import EventType, Event, AssignmentType, Place, Scope, Assignment
+from app.db.models import Area, EventType, Event, AssignmentType, Place, Scope, Assignment
 from app.ui.dialogs.alerts import validationError
 from app.ui.models import TypeListModel
 
@@ -29,14 +29,38 @@ class TypeManagerDialog(QDialog):
         self.addButton.clicked.connect(self.onAddButtonClicked)
         self.delButton.clicked.connect(self.onDelButtonClicked)
 
-    def onAddButtonClicked(self) -> None:
-        self.listViewModel.insertRow(-1)
+    def onAddButtonClicked(self, **kwargs) -> None:
+        self.listViewModel.insertRow(-1, **kwargs)
         index = self.listViewModel.index(self.listViewModel.rowCount() - 1, 0)
         self.listView.edit(index)
 
     def onDelButtonClicked(self) -> None:
         currentRowIndex = self.listView.currentIndex().row()
         self.listViewModel.removeRow(currentRowIndex)
+
+
+class AreaMangerDialog(TypeManagerDialog):
+    def __init__(self) -> None:
+        super().__init__(Area, "Части")
+        self.combobox = QComboBox()
+        self.combobox.currentTextChanged.connect(self.updateModel)
+        
+        with Session(ENGINE) as session:
+            names = session.exec(select(Place.name)).all()
+        
+        self.combobox.addItems(name for name in names)
+        self.verticalLayout_4.addWidget(self.combobox)
+        
+    def updateModel(self, place_name: str):
+        with Session(ENGINE) as session:
+            self.selected_place = session.exec(select(Place).where(Place.name == place_name)).first()
+            areas = session.exec(select(Area).where(Area.place == self.selected_place)).all()
+
+        self.listViewModel = TypeListModel[Area](areas, self)
+        self.listView.setModel(self.listViewModel)
+        
+    def onAddButtonClicked(self) -> None:
+        super().onAddButtonClicked(place_id=self.selected_place.id)        
 
 
 class CreateEventDialog(QDialog):

@@ -19,7 +19,7 @@ from app.ui.dialogs import (
     EditEventDialog,
     CreateWorkDialog,
 )
-from app.ui.dialogs.ext import EditWorksDialog
+from app.ui.dialogs.ext import AreaMangerDialog, EditWorksDialog
 from app.ui.models import SECTIONS, EventTableModel, WorkRequestTableModel
 from app.ui.widgets import Ui_Form
 from app.ui.wizards.reservation import ReservationWizard
@@ -75,6 +75,11 @@ class MainWindow(QMainWindow):
         self.pushButton_3.clicked.connect(self.filterByWorkSection)
         self.pushButton_4.clicked.connect(self.resetEventsFilter)
         self.action_3.triggered.connect(lambda: ReservationWizard().exec())
+        self.action_4.triggered.connect(self.showAreasManager)
+        
+    def showAreasManager(self):
+        AreaMangerDialog().exec()
+        self.refreshTableViews()
 
     def showTypeManagerDialog(self, _type, title):
         TypeManagerDialog(_type, title).exec()

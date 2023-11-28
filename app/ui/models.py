@@ -36,7 +36,7 @@ class TypeListModel(Generic[TBaseNamedModel], QAbstractListModel):
         if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
             return self._data[index.row()].name
 
-    def insertRow(self, row: int, parent: QModelIndex = QModelIndex()) -> bool:
+    def insertRow(self, row: int, parent: QModelIndex = QModelIndex(), **kwargs) -> bool:
         self.beginInsertRows(parent, row, row)
 
         name = f"Объект ({self.rowCount()})"
@@ -46,7 +46,7 @@ class TypeListModel(Generic[TBaseNamedModel], QAbstractListModel):
             return False
 
         with Session(ENGINE) as session:
-            newObj: TBaseNamedModel = self._getGenericType()(name=name)
+            newObj: TBaseNamedModel = self._getGenericType()(name=name, **kwargs)
             session.add(newObj)
             session.commit()
             session.refresh(newObj)

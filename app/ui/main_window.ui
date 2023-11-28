@@ -537,6 +537,7 @@
      <string>&amp;Помещения</string>
     </property>
     <addaction name="action_2"/>
+    <addaction name="action_4"/>
     <addaction name="action_3"/>
    </widget>
    <addaction name="menu"/>
@@ -558,6 +559,11 @@
   <action name="action_3">
    <property name="text">
     <string>Бронирование</string>
+   </property>
+  </action>
+  <action name="action_4">
+   <property name="text">
+    <string>Части</string>
    </property>
   </action>
  </widget>
