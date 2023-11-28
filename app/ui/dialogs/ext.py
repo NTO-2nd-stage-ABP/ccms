@@ -44,12 +44,19 @@ class AreaMangerDialog(TypeManagerDialog):
         super().__init__(Area, "Части")
         self.combobox = QComboBox()
         self.combobox.currentTextChanged.connect(self.updateModel)
-        
+
         with Session(ENGINE) as session:
-            names = session.exec(select(Place.name)).all()
-        
-        self.combobox.addItems(name for name in names)
+            self.names = session.exec(select(Place.name)).all()
+
+        self.combobox.addItems(name for name in self.names)
         self.verticalLayout_4.addWidget(self.combobox)
+
+    def exec(self) -> int:
+        if not self.names:
+            QMessageBox.critical(self, "Ошибка", "Вы должны создать хотя бы одно помещение!")
+            return 0
+        
+        return super().exec()
         
     def updateModel(self, place_name: str):
         with Session(ENGINE) as session:
