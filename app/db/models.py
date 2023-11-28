@@ -70,8 +70,7 @@ class EventType(UniqueNamedModel, table=True):
 
 
 class Event(BaseModel, table=True):
-    """
-    Represents an event registered on a specific date.
+    """Represents an event registered on a specific date.
 
     Attributes:
         title (str): The title of the event.
