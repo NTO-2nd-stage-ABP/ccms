@@ -125,8 +125,6 @@ class ReservationWizard(QtWidgets.QWizard):
         place_id: int = self.field(Fields.PLACE_ID)
         with Session(ENGINE) as session:
             (ret, ), = session.query(exists().where(Area.place_id == place_id))
-
-        # print("оно как сюда заходит не надо когда?")
         
         if ret:
             return super().nextId()
