@@ -65,6 +65,11 @@ class AreaMangerDialog(TypeManagerDialog):
 
         self.listViewModel = TypeListModel[Area](areas, self)
         self.listView.setModel(self.listViewModel)
+
+        self.delButton.setDisabled(True)
+        self.listView.selectionModel().selectionChanged.connect(
+            lambda: self.delButton.setDisabled(False)
+        )
         
     def onAddButtonClicked(self) -> None:
         super().onAddButtonClicked(place_id=self.selected_place.id)        

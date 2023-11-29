@@ -3,6 +3,8 @@ from typing import Optional, List
 from datetime import datetime
 
 from sqlmodel import SQLModel, Field, Relationship
+
+from sqlalchemy import UniqueConstraint
 from sqlalchemy.orm import declared_attr
 
 
@@ -57,7 +59,10 @@ class Place(UniqueNamedModel, table=True):
         reservations (List[Reservation]): The list of reservations associated with this place.
     """
 
-    areas: List["Area"] = Relationship(back_populates="place")
+    areas: List["Area"] = Relationship(
+        back_populates="place",
+        sa_relationship_kwargs={"cascade": "all, delete"},
+    )
     events: List["Event"] = Relationship(back_populates="place")
     assignments: List["Assignment"] = Relationship(back_populates="place")
     reservations: List["Reservation"] = Relationship(back_populates="place")
@@ -158,7 +163,7 @@ class Assignment(BaseModel, table=True):
     event: Optional[Event] = Relationship(back_populates="assignments")
 
 
-class Area(UniqueNamedModel, table=True):
+class Area(BaseModel, table=True):
     """A class representing a part of a place.
 
     Attributes:
@@ -168,11 +173,15 @@ class Area(UniqueNamedModel, table=True):
         event (Optional[Event]): The event associated with this area.
     """
 
+    name: str = Field(max_length=128, index=True)
+
     place_id: Optional[int] = Field(default=None, foreign_key="Place.id")
     place: Optional[Place] = Relationship(back_populates="areas")
 
     event_id: Optional[int] = Field(default=None, foreign_key="Event.id")
     event: Optional[Event] = Relationship(back_populates="areas")
+
+    __table_args__ = (UniqueConstraint("name", "place_id"),)
 
 
 class Reservation(BaseModel, table=True):
