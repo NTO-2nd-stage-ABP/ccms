@@ -142,7 +142,14 @@
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QComboBox" name="comboBox_12"/>
+              <widget class="QComboBox" name="comboBox_12">
+               <property name="sizeAdjustPolicy">
+                <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
+               </property>
+               <property name="placeholderText">
+                <string>Не выбрано</string>
+               </property>
+              </widget>
              </item>
             </layout>
            </item>
@@ -479,7 +486,14 @@
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QComboBox" name="comboBox"/>
+              <widget class="QComboBox" name="comboBox">
+               <property name="sizeAdjustPolicy">
+                <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
+               </property>
+               <property name="placeholderText">
+                <string>Не выбрано</string>
+               </property>
+              </widget>
              </item>
             </layout>
            </item>
@@ -542,11 +556,19 @@
    <addaction name="menu"/>
   </widget>
   <action name="action_2">
+   <property name="icon">
+    <iconset>
+     <normaloff>resourses/work.png</normaloff>resourses/work.png</iconset>
+   </property>
    <property name="text">
     <string>Обзор</string>
    </property>
   </action>
   <action name="action_4">
+   <property name="icon">
+    <iconset>
+     <normaloff>resourses/categorize.png</normaloff>resourses/categorize.png</iconset>
+   </property>
    <property name="text">
     <string>Части</string>
    </property>

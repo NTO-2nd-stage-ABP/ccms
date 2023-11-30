@@ -23,7 +23,7 @@ class WelcomePage(QtWidgets.QWizardPage):
         self.registerField(Fields.END_AT, self.endDateTimeEdit)
 
     def initializePage(self) -> None:
-        self.endDateTimeEdit.setMinimumDateTime(QtCore.QDateTime.currentDateTime())
+        self.endDateTimeEdit.setMinimumDateTime(QtCore.QDateTime(self.wizard()._event.start_at))
         self.startDateTimeEdit.setMinimumDateTime(QtCore.QDateTime.currentDateTime())
     
     def validatePage(self) -> bool:

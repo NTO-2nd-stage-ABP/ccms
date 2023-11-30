@@ -14,72 +14,68 @@
    <string>Создание мероприятия</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="0">
-    <widget class="QGroupBox" name="detailedInformationGroupBox">
-     <property name="title">
-      <string>Подробная информация</string>
+   <item row="4" column="0">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Save</set>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
+     <property name="centerButtons">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Пункт проведения</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <layout class="QFormLayout" name="detailedInformationFormLayout">
+       <layout class="QFormLayout" name="formLayout">
         <item row="0" column="0">
-         <widget class="QLabel" name="dateLabel">
+         <widget class="QLabel" name="label">
           <property name="text">
-           <string>Дата начала:</string>
+           <string>Место:</string>
           </property>
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QDateTimeEdit" name="dateDateTimeEdit">
-          <property name="dateTime">
-           <datetime>
-            <hour>0</hour>
-            <minute>0</minute>
-            <second>0</second>
-            <year>2024</year>
-            <month>1</month>
-            <day>1</day>
-           </datetime>
-          </property>
-          <property name="calendarPopup">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="typeLabel">
-          <property name="text">
-           <string>Разновидность:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QComboBox" name="typeComboBox"/>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="roomLabel">
-          <property name="text">
-           <string>Помещение:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
-           <widget class="QComboBox" name="roomComboBox">
-            <property name="enabled">
-             <bool>false</bool>
+           <widget class="QLabel" name="placeLabel">
+            <property name="text">
+             <string>Не выбрано</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QToolButton" name="reservationButton">
             <property name="text">
-             <string>...</string>
+             <string>За&amp;бронировать…</string>
+            </property>
+            <property name="shortcut">
+             <string>Ctrl+R</string>
             </property>
            </widget>
           </item>
          </layout>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="areasLabel">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Зоны:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QListWidget" name="areasListWidget">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
@@ -120,31 +116,82 @@
         </item>
         <item row="1" column="1">
          <widget class="QTextEdit" name="descriptionTextEdit">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>100</height>
+           </size>
+          </property>
+          <property name="tabChangesFocus">
+           <bool>true</bool>
           </property>
           <property name="acceptRichText">
            <bool>false</bool>
           </property>
           <property name="placeholderText">
-           <string>Предоставьте дополнительную информацию об этом мероприятии…</string>
+           <string>Детально опишите ход проведения этого мероприятия…</string>
           </property>
          </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="dateLabel">
+          <property name="text">
+           <string>Начало:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QDateTimeEdit" name="dateDateTimeEdit">
+            <property name="calendarPopup">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="typeLabel">
+            <property name="text">
+             <string>Категория:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="typeComboBox">
+            <property name="sizeAdjustPolicy">
+             <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
+            </property>
+            <property name="placeholderText">
+             <string>Не выбрано</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>
      </layout>
     </widget>
    </item>
-   <item row="4" column="0">
+   <item row="3" column="0">
     <widget class="QGroupBox" name="statusGroupBox_2">
      <property name="title">
       <string>Пространство</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_5">
+     <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QRadioButton" name="entertainemtRadioButton">
         <property name="text">
@@ -164,29 +211,15 @@
       </item>
       <item>
        <widget class="QRadioButton" name="educationRadioButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Образование</string>
         </property>
        </widget>
       </item>
      </layout>
-    </widget>
-   </item>
-   <item row="6" column="0">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0">
-    <widget class="Line" name="formDivider">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
     </widget>
    </item>
   </layout>

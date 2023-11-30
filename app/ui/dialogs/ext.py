@@ -1,6 +1,8 @@
+from argparse import ArgumentParser, RawTextHelpFormatter
+
 from PyQt6 import uic
-from PyQt6.QtCore import QDateTime
-from PyQt6.QtWidgets import QDialog, QMessageBox, QComboBox
+from PyQt6.QtCore import QUrl, QDateTime
+from PyQt6.QtWidgets import QDialog, QMessageBox, QComboBox, QDialogButtonBox, QMainWindow
 from sqlmodel import Session, select
 
 from app.db import ENGINE
@@ -81,24 +83,32 @@ class CreateEventDialog(QDialog):
         super().__init__()
         uic.loadUi("app/ui/dialogs/create_event.ui", self)
         
-        self.reservationButton.clicked.connect(self.showReservationWizard)
+        self.dateDateTimeEdit.setMinimumDateTime(QDateTime.currentDateTime())
 
-        self.dateDateTimeEdit.setDateTime(QDateTime.currentDateTime())
+        self.reservationButton.clicked.connect(self.showReservationWizard)
 
         with Session(ENGINE) as session:
             eventTypeNames = session.exec(select(EventType.name)).all()
-            roomTypeNames = session.exec(select(Place.name)).all()
+            # roomTypeNames = session.exec(select(Place.name)).all()
 
-        self.typeComboBox.addItems(eventTypeName for eventTypeName in eventTypeNames)
-        self.roomComboBox.addItems(eventTypeName for eventTypeName in roomTypeNames)
+        self.typeComboBox.addItems(eventTypeNames)
+        # self.roomComboBox.addItems(eventTypeName for eventTypeName in roomTypeNames)
         
     def showReservationWizard(self):
         event = self.create(True)
         
         wizard = ReservationWizard(event)
         
-        if wizard.exec():
-            self.reservation = wizard.reservation
+        if not wizard.exec():
+            return
+
+        self._reservation = wizard.reservation
+        with Session(ENGINE) as session:
+            place = session.get(Place, self._reservation.place_id)
+            self.placeLabel.setText(place.name)
+            self.areasListWidget.clear()
+            self.areasListWidget.addItems(list(area.name for area in self._reservation.areas))
+            self.areasLabel.setEnabled(any(self._reservation.areas))
         
     def validate(self) -> bool:
         title = self.titleLineEdit.text()
@@ -113,7 +123,7 @@ class CreateEventDialog(QDialog):
         date = self.dateDateTimeEdit.dateTime().toPyDateTime()
         description = self.descriptionTextEdit.toPlainText()
         event_type_name = self.typeComboBox.currentText()
-        room_type_name = self.roomComboBox.currentText()
+        # room_type_name = self.roomComboBox.currentText()
 
         if self.entertainemtRadioButton.isChecked():
             section_id = 0
@@ -127,25 +137,25 @@ class CreateEventDialog(QDialog):
             type_id = session.exec(
                 select(EventType.id).where(EventType.name == event_type_name)
             ).first()
-            room_id = session.exec(
-                select(Place.id).where(Place.name == room_type_name)
-            ).first()
+            # room_id = session.exec(
+            #     select(Place.id).where(Place.name == room_type_name)
+            # ).first()
             event = Event(
                 title=title,
                 start_at=date,
                 description=description,
                 type_id=type_id,
-                room_id=room_id,
+                # room_id=room_id,
                 scope=section_id + 1,
             )
             session.add(event)
             if flush:
                 session.flush()
             else:
-                session.add(self.reservation)
+                session.add(self._reservation)
                 session.commit()
                 session.refresh(event)
-                session.refresh(self.reservation)
+                session.refresh(self._reservation)
         return event
 
     def accept(self) -> None:
@@ -167,6 +177,8 @@ class EditEventDialog(QDialog):
         self.descriptionTextEdit.setPlainText(self._event.description)
         self.dateDateTimeEdit.setDateTime(QDateTime(self._event.start_at))
 
+        if event.scope == Scope(1):
+            self.entertainmentRadioButton.setChecked(True)
         if event.scope == Scope(2):
             self.enlightenmentRadioButton.setChecked(True)
         if event.scope == Scope(3):

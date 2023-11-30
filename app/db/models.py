@@ -85,6 +85,9 @@ class Place(UniqueNamedModel, table=True):
         back_populates="place",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
+    
+    def __str__(self) -> str:
+        return self.name
 
 
 class Area(BaseModel, table=True):
