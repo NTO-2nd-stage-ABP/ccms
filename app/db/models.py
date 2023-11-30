@@ -49,6 +49,22 @@ class UniqueNamedModel(BaseModel):
     name: str = Field(max_length=128, unique=True, index=True)
 
 
+class AreaReservationLink(SQLModel, table=True):
+    """A class representing the many-to-many relationship with area and reservation.
+
+    Attributes:
+        area_id (Optional[int]): The unique identifier of the associated area.
+        reservation_id (Optional[int]): The unique identifier of the associated reservation.
+    """
+
+    area_id: Optional[int] = Field(
+        default=None, foreign_key="Area.id", primary_key=True
+    )
+    reservation_id: Optional[int] = Field(
+        default=None, foreign_key="Reservation.id", primary_key=True
+    )
+
+
 class Place(UniqueNamedModel, table=True):
     """A class representing a place.
 
@@ -66,6 +82,28 @@ class Place(UniqueNamedModel, table=True):
     events: List["Event"] = Relationship(back_populates="place")
     assignments: List["Assignment"] = Relationship(back_populates="place")
     reservations: List["Reservation"] = Relationship(back_populates="place")
+
+
+class Area(BaseModel, table=True):
+    """A class representing a part of a place.
+
+    Attributes:
+        name (str): The unique name of this area.
+        place_id (Optional[int]): The unique identifier of the associated place.
+        place (Optional[Place]): The place associated with this area.
+        reservations (List[Reservation]): The list of reservations associated with this area.
+    """
+
+    name: str = Field(max_length=128, index=True)
+
+    place_id: Optional[int] = Field(default=None, foreign_key="Place.id")
+    place: Optional[Place] = Relationship(back_populates="areas")
+
+    reservations: List["Reservation"] = Relationship(
+        back_populates="areas", link_model=AreaReservationLink
+    )
+
+    __table_args__ = (UniqueConstraint("name", "place_id"),)
 
 
 class EventType(UniqueNamedModel, table=True):
@@ -90,7 +128,6 @@ class Event(BaseModel, table=True):
         type (Optional[EventType]): The event type associated with this event.
         place_id (Optional[int]): The unique identifier of the associated place.
         place (Optional[Place]): The associated place of the event.
-        areas (List[Area]): The list of areas associated with this event.
         assignments (List[Assignment]): The list of assignments associated with this event.
         reservations (List[Reservation]): The list of reservations associated with this event.
     """
@@ -106,7 +143,6 @@ class Event(BaseModel, table=True):
     place_id: Optional[int] = Field(default=None, foreign_key="Place.id")
     place: Optional[Place] = Relationship(back_populates="events")
 
-    areas: List["Area"] = Relationship(back_populates="event")
     assignments: List["Assignment"] = Relationship(back_populates="event")
     reservations: List["Reservation"] = Relationship(back_populates="event")
 
@@ -163,27 +199,6 @@ class Assignment(BaseModel, table=True):
     event: Optional[Event] = Relationship(back_populates="assignments")
 
 
-class Area(BaseModel, table=True):
-    """A class representing a part of a place.
-
-    Attributes:
-        place_id (Optional[int]): The unique identifier of the associated place.
-        place (Optional[Place]): The place associated with this area.
-        event_id (Optional[int]): The unique identifier of the associated event.
-        event (Optional[Event]): The event associated with this area.
-    """
-
-    name: str = Field(max_length=128, index=True)
-
-    place_id: Optional[int] = Field(default=None, foreign_key="Place.id")
-    place: Optional[Place] = Relationship(back_populates="areas")
-
-    event_id: Optional[int] = Field(default=None, foreign_key="Event.id")
-    event: Optional[Event] = Relationship(back_populates="areas")
-
-    __table_args__ = (UniqueConstraint("name", "place_id"),)
-
-
 class Reservation(BaseModel, table=True):
     """A class representing a place reservation for an event.
 
@@ -191,18 +206,23 @@ class Reservation(BaseModel, table=True):
         start_at (datetime): The start time of the reservation.
         end_at (datetime): The end time of the reservation.
         comment (Optional[str]): An optional comment for the reservation.
-        place_id (Optional[int]): The unique identifier of the associated place.
-        place (Place): The place associated with this reservation.
         event_id (Optional[int]): The unique identifier of the associated event.
         event (Event): The event associated with this reservation.
+        place_id (Optional[int]): The unique identifier of the associated place.
+        place (Place): The place associated with this reservation.
+        areas (List[Area]): The list of areas associated with this reservation.
     """
 
     start_at: datetime
     end_at: datetime
     comment: Optional[str] = Field(default=None, max_length=1028)
 
+    event_id: Optional[int] = Field(default=None, foreign_key="Event.id")
+    event: Event = Relationship(back_populates="reservations")
+
     place_id: Optional[int] = Field(default=None, foreign_key="Place.id")
     place: Place = Relationship(back_populates="reservations")
 
-    event_id: Optional[int] = Field(default=None, foreign_key="Event.id")
-    event: Event = Relationship(back_populates="reservations")
+    areas: List[Area] = Relationship(
+        back_populates="reservations", link_model=AreaReservationLink
+    )

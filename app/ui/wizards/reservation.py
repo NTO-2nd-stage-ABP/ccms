@@ -84,8 +84,8 @@ class AreasPage(QtWidgets.QWizardPage):
             place = session.get(Place, place_id)
             for area in place.areas:
                 item = QtWidgets.QListWidgetItem(area.name)
-                enabled = QtCore.Qt.ItemFlag.NoItemFlags if area.event_id else QtCore.Qt.ItemFlag.ItemIsEnabled
-                item.setFlags(enabled | QtCore.Qt.ItemFlag.ItemIsUserCheckable)
+                # enabled = QtCore.Qt.ItemFlag.NoItemFlags if area.event_id else QtCore.Qt.ItemFlag.ItemIsEnabled
+                item.setFlags(QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsUserCheckable)
                 item.setCheckState(QtCore.Qt.CheckState.Unchecked)
                 self.listWidget.addItem(item)    
         return super().initializePage()
