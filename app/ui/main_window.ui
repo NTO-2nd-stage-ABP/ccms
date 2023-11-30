@@ -54,7 +54,74 @@
           </attribute>
          </widget>
         </item>
-        <item row="3" column="1">
+        <item row="0" column="0" colspan="2">
+         <layout class="QHBoxLayout" name="horizontalLayout_31">
+          <item>
+           <widget class="QLabel" name="label_43">
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Ваши активные задачи:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item row="1" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout_22">
+          <item>
+           <widget class="QPushButton" name="completeSelectedDesktopPushButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Пометить выбранное как &amp;выполненное</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>resourses/check.png</normaloff>resourses/check.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_9">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="selectedDesktopCountLabel">
+            <property name="text">
+             <string>0 из 1 выбрано</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="1" column="1" rowspan="3">
          <widget class="QGroupBox" name="groupBox">
           <property name="title">
            <string>Фильтрация</string>
@@ -112,73 +179,6 @@
            </item>
           </layout>
          </widget>
-        </item>
-        <item row="1" column="0" colspan="2">
-         <layout class="QHBoxLayout" name="horizontalLayout_22">
-          <item>
-           <widget class="QPushButton" name="completeSelectedDesktopPushButton">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string>Пометить выбранное как &amp;выполненное</string>
-            </property>
-            <property name="icon">
-             <iconset>
-              <normaloff>resourses/check.png</normaloff>resourses/check.png</iconset>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer_9">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QLabel" name="selectedDesktopCountLabel">
-            <property name="text">
-             <string>0 из 1 выбрано</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="0" column="0" colspan="2">
-         <layout class="QHBoxLayout" name="horizontalLayout_31">
-          <item>
-           <widget class="QLabel" name="label_43">
-            <property name="font">
-             <font>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Ваши активные задачи:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
         </item>
        </layout>
       </widget>
@@ -355,7 +355,110 @@
           </attribute>
          </widget>
         </item>
-        <item row="3" column="1">
+        <item row="0" column="0" colspan="2">
+         <layout class="QHBoxLayout" name="horizontalLayout_24">
+          <item>
+           <widget class="QLabel" name="label_32">
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Выберите мероприятие для редактирования:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_8">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="newEventPushButton">
+            <property name="text">
+             <string>&amp;Новое мероприятие</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>resourses/create.png</normaloff>resourses/create.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="eventsTypeMaximizePushButton">
+            <property name="text">
+             <string>Разновидности</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>resourses/maximize.png</normaloff>resourses/maximize.png</iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="1" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout_17">
+          <item>
+           <widget class="QPushButton" name="editSelectedEventsPushButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>От&amp;редактировать выбранное</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>resourses/edit.png</normaloff>resourses/edit.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="deleteSelectedEventsPushButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>&amp;Удалить выбранное</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>resourses/delete.png</normaloff>resourses/delete.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_6">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="selectedEventsCountLabel">
+            <property name="text">
+             <string>0 из 1 выбрано</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="1" column="1" rowspan="3">
          <widget class="QGroupBox" name="groupBox_2">
           <property name="title">
            <string>Фильтрация</string>
@@ -414,109 +517,6 @@
           </layout>
          </widget>
         </item>
-        <item row="0" column="0" colspan="2">
-         <layout class="QHBoxLayout" name="horizontalLayout_24">
-          <item>
-           <widget class="QLabel" name="label_32">
-            <property name="font">
-             <font>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Выберите мероприятие для редактирования:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer_8">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="newEventPushButton">
-            <property name="text">
-             <string>&amp;Новое мероприятие</string>
-            </property>
-            <property name="icon">
-             <iconset>
-              <normaloff>resourses/create.png</normaloff>resourses/create.png</iconset>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="eventsTypeMaximizePushButton">
-            <property name="text">
-             <string>Разновидности</string>
-            </property>
-            <property name="icon">
-             <iconset>
-              <normaloff>resourses/maximize.png</normaloff>resourses/maximize.png</iconset>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="1" column="0" colspan="2">
-         <layout class="QHBoxLayout" name="horizontalLayout_17">
-          <item>
-           <widget class="QPushButton" name="editSelectedEventsPushButton">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string>От&amp;редактировать выбранное</string>
-            </property>
-            <property name="icon">
-             <iconset>
-              <normaloff>resourses/edit.png</normaloff>resourses/edit.png</iconset>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="deleteSelectedEventsPushButton">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string>&amp;Удалить выбранное</string>
-            </property>
-            <property name="icon">
-             <iconset>
-              <normaloff>resourses/delete.png</normaloff>resourses/delete.png</iconset>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer_6">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QLabel" name="selectedEventsCountLabel">
-            <property name="text">
-             <string>0 из 1 выбрано</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
        </layout>
       </widget>
      </widget>
@@ -538,27 +538,12 @@
     </property>
     <addaction name="action_2"/>
     <addaction name="action_4"/>
-    <addaction name="action_3"/>
    </widget>
    <addaction name="menu"/>
   </widget>
-  <action name="action">
-   <property name="icon">
-    <iconset>
-     <normaloff>resourses/categorize.png</normaloff>resourses/categorize.png</iconset>
-   </property>
-   <property name="text">
-    <string>Помещения</string>
-   </property>
-  </action>
   <action name="action_2">
    <property name="text">
     <string>Обзор</string>
-   </property>
-  </action>
-  <action name="action_3">
-   <property name="text">
-    <string>Бронирование</string>
    </property>
   </action>
   <action name="action_4">

@@ -21,8 +21,6 @@ from app.ui.dialogs import (
 )
 from app.ui.dialogs.ext import AreaMangerDialog, EditWorksDialog
 from app.ui.models import SECTIONS, EventTableModel, WorkRequestTableModel
-from app.ui.widgets import Ui_Form
-from app.ui.wizards.reservation import ReservationWizard
 
 
 class Table(QWidget):
@@ -74,7 +72,6 @@ class MainWindow(QMainWindow):
         self.comboBox.addItems(section for section in SECTIONS.values())
         self.pushButton_3.clicked.connect(self.filterByWorkSection)
         self.pushButton_4.clicked.connect(self.resetEventsFilter)
-        self.action_3.triggered.connect(lambda: ReservationWizard().exec())
         self.action_4.triggered.connect(self.showAreasManager)
         
     def showAreasManager(self):

@@ -49,7 +49,7 @@ class UniqueNamedModel(BaseModel):
     name: str = Field(max_length=128, unique=True, index=True)
 
 
-class AreaReservationLink(BaseModel, table=True):
+class AreaReservationLink(SQLModel, table=True):
     """A class representing the many-to-many relationship with area and reservation.
 
     Attributes:
@@ -81,7 +81,10 @@ class Place(UniqueNamedModel, table=True):
     )
     events: List["Event"] = Relationship(back_populates="place")
     assignments: List["Assignment"] = Relationship(back_populates="place")
-    reservations: List["Reservation"] = Relationship(back_populates="place")
+    reservations: List["Reservation"] = Relationship(
+        back_populates="place",
+        sa_relationship_kwargs={"cascade": "all, delete"},
+    )
 
 
 class Area(BaseModel, table=True):
@@ -144,7 +147,10 @@ class Event(BaseModel, table=True):
     place: Optional[Place] = Relationship(back_populates="events")
 
     assignments: List["Assignment"] = Relationship(back_populates="event")
-    reservations: List["Reservation"] = Relationship(back_populates="event")
+    reservations: List["Reservation"] = Relationship(
+        back_populates="event",
+        sa_relationship_kwargs={"cascade": "all, delete"},
+    )
 
 
 class AssignmentType(UniqueNamedModel, table=True):

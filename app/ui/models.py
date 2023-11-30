@@ -195,10 +195,10 @@ class BaseTableModel(Generic[TModel], QAbstractTableModel):
 
 class EventTableModel(BaseTableModel[Event]):
     GENERATORS = {
-        "Заголовок": lambda e: e.name,
-        "Пространство": lambda e: SECTIONS[e.section.value],
-        "Разновидность": lambda e: e.type.name,
-        "Помещение": lambda e: e.room.name,
+        "Заголовок": lambda e: e.title,
+        "Пространство": lambda e: SECTIONS[e.scope.value],
+        "Разновидность": lambda e: e.type.name if e.type else None,
+        "Помещение": lambda e: e.place.name if e.place else None,
         "Дата начала": lambda e: e.start_at.strftime("%d.%m.%Y %H:%M"),
         "Дата создания": lambda e: e.created_at.strftime("%d.%m.%Y %H:%M"),
         "Описание": lambda e: e.description,

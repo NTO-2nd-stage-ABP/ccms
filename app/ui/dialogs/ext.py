@@ -7,6 +7,7 @@ from app.db import ENGINE
 from app.db.models import Area, EventType, Event, AssignmentType, Place, Scope, Assignment
 from app.ui.dialogs.alerts import validationError
 from app.ui.models import TypeListModel
+from app.ui.wizards.reservation import ReservationWizard
 
 
 class TypeManagerDialog(QDialog):
@@ -79,6 +80,8 @@ class CreateEventDialog(QDialog):
     def __init__(self):
         super().__init__()
         uic.loadUi("app/ui/dialogs/create_event.ui", self)
+        
+        self.reservationButton.clicked.connect(self.showReservationWizard)
 
         self.dateDateTimeEdit.setDateTime(QDateTime.currentDateTime())
 
@@ -88,14 +91,25 @@ class CreateEventDialog(QDialog):
 
         self.typeComboBox.addItems(eventTypeName for eventTypeName in eventTypeNames)
         self.roomComboBox.addItems(eventTypeName for eventTypeName in roomTypeNames)
-
-    def accept(self) -> None:
+        
+    def showReservationWizard(self):
+        event = self.create(True)
+        
+        wizard = ReservationWizard(event)
+        
+        if wizard.exec():
+            self.reservation = wizard.reservation
+        
+    def validate(self) -> bool:
         title = self.titleLineEdit.text()
 
         if not title:
             validationError(self, "Название мероприятия должно быть заполнено!")
-            return
-
+            return False
+        return True
+    
+    def create(self, flush=False) -> Event:
+        title = self.titleLineEdit.text()
         date = self.dateDateTimeEdit.dateTime().toPyDateTime()
         description = self.descriptionTextEdit.toPlainText()
         event_type_name = self.typeComboBox.currentText()
@@ -116,7 +130,7 @@ class CreateEventDialog(QDialog):
             room_id = session.exec(
                 select(Place.id).where(Place.name == room_type_name)
             ).first()
-            newEvent = Event(
+            event = Event(
                 title=title,
                 start_at=date,
                 description=description,
@@ -124,9 +138,21 @@ class CreateEventDialog(QDialog):
                 room_id=room_id,
                 scope=section_id + 1,
             )
-            session.add(newEvent)
-            session.commit()
+            session.add(event)
+            if flush:
+                session.flush()
+            else:
+                session.add(self.reservation)
+                session.commit()
+                session.refresh(event)
+                session.refresh(self.reservation)
+        return event
 
+    def accept(self) -> None:
+        if not self.validate():
+            return
+        
+        self.create()
         return super().accept()
 
 
