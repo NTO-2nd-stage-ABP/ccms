@@ -140,6 +140,7 @@ class AreasPage(QtWidgets.QWizardPage):
 
     def initializePage(self) -> None:
         self.listWidget.clear()
+        self.reserveAllCheckBox.setChecked(False)
 
         start_at = self.field(Fields.START_AT).toPyDateTime()        
         place_id: int = self.field(Fields.PLACE_ID)
