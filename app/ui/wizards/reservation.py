@@ -127,6 +127,16 @@ class AreasPage(QtWidgets.QWizardPage):
         lst.setVisible(False)
         self.registerField(Fields.AREA_IDS, lst, "selectedItems")
         self.listWidget.itemChanged.connect(lambda: self.completeChanged.emit())
+        self.reserveAllCheckBox.toggled.connect(self.toggleAll)
+        
+    def toggleAll(self, is_checked: bool):
+        state = QtCore.Qt.CheckState.Checked if is_checked else QtCore.Qt.CheckState.Unchecked
+        
+        for i in range(self.listWidget.count()):
+            item = self.listWidget.item(i)
+            if QtCore.Qt.ItemFlag.ItemIsEnabled in item.flags():
+                item.setCheckState(state)
+            self.listWidget.insertItem(i, item)
 
     def initializePage(self) -> None:
         self.listWidget.clear()

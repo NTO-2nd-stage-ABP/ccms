@@ -23,6 +23,13 @@
    <item>
     <widget class="QListWidget" name="listWidget"/>
    </item>
+   <item>
+    <widget class="QCheckBox" name="reserveAllCheckBox">
+     <property name="text">
+      <string>Выбрать всё</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources/>
