@@ -49,7 +49,7 @@ class UniqueNamedModel(BaseModel):
     name: str = Field(max_length=128, unique=True, index=True)
 
 
-class AreaReservationLink(SQLModel, table=True):
+class AreaReservationLink(BaseModel, table=True):
     """A class representing the many-to-many relationship with area and reservation.
 
     Attributes:
