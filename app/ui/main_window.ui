@@ -18,7 +18,7 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="icon">
@@ -90,12 +90,18 @@
             <property name="enabled">
              <bool>false</bool>
             </property>
+            <property name="toolTip">
+             <string>Пометить задачи как выполненные (Ctrl+X)</string>
+            </property>
             <property name="text">
              <string>Пометить выбранное как &amp;выполненное</string>
             </property>
             <property name="icon">
              <iconset>
               <normaloff>resourses/check.png</normaloff>resourses/check.png</iconset>
+            </property>
+            <property name="shortcut">
+             <string>Ctrl+X</string>
             </property>
            </widget>
           </item>
@@ -252,6 +258,9 @@
           </item>
           <item>
            <widget class="QPushButton" name="newWorkPushButton">
+            <property name="toolTip">
+             <string>Создать новую заявку (Ctrl+N)</string>
+            </property>
             <property name="text">
              <string>&amp;Новая заявка</string>
             </property>
@@ -259,16 +268,25 @@
              <iconset>
               <normaloff>resourses/create.png</normaloff>resourses/create.png</iconset>
             </property>
+            <property name="shortcut">
+             <string>Ctrl+N</string>
+            </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="worksTypeMaximizePushButton">
+            <property name="toolTip">
+             <string>Обзор типов (Ctrl+T)</string>
+            </property>
             <property name="text">
              <string>Разновидности</string>
             </property>
             <property name="icon">
              <iconset>
               <normaloff>resourses/maximize.png</normaloff>resourses/maximize.png</iconset>
+            </property>
+            <property name="shortcut">
+             <string>Ctrl+T</string>
             </property>
            </widget>
           </item>
@@ -281,12 +299,18 @@
             <property name="enabled">
              <bool>false</bool>
             </property>
+            <property name="toolTip">
+             <string>Отредактировать выбранную заявку (F2)</string>
+            </property>
             <property name="text">
              <string>От&amp;редактировать выбранное</string>
             </property>
             <property name="icon">
              <iconset>
               <normaloff>resourses/edit.png</normaloff>resourses/edit.png</iconset>
+            </property>
+            <property name="shortcut">
+             <string>F2</string>
             </property>
            </widget>
           </item>
@@ -295,12 +319,18 @@
             <property name="enabled">
              <bool>false</bool>
             </property>
+            <property name="toolTip">
+             <string>Удалить выбранные заявки (Del)</string>
+            </property>
             <property name="text">
              <string>&amp;Удалить выбранное</string>
             </property>
             <property name="icon">
              <iconset>
               <normaloff>resourses/delete.png</normaloff>resourses/delete.png</iconset>
+            </property>
+            <property name="shortcut">
+             <string>Del</string>
             </property>
            </widget>
           </item>
@@ -391,6 +421,9 @@
           </item>
           <item>
            <widget class="QPushButton" name="newEventPushButton">
+            <property name="toolTip">
+             <string>Создать новое мероприятие (Ctrl+N)</string>
+            </property>
             <property name="text">
              <string>&amp;Новое мероприятие</string>
             </property>
@@ -398,16 +431,25 @@
              <iconset>
               <normaloff>resourses/create.png</normaloff>resourses/create.png</iconset>
             </property>
+            <property name="shortcut">
+             <string>Ctrl+N</string>
+            </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="eventsTypeMaximizePushButton">
+            <property name="toolTip">
+             <string>Обзор типов (Ctrl+T)</string>
+            </property>
             <property name="text">
              <string>Разновидности</string>
             </property>
             <property name="icon">
              <iconset>
               <normaloff>resourses/maximize.png</normaloff>resourses/maximize.png</iconset>
+            </property>
+            <property name="shortcut">
+             <string>Ctrl+T</string>
             </property>
            </widget>
           </item>
@@ -420,12 +462,18 @@
             <property name="enabled">
              <bool>false</bool>
             </property>
+            <property name="toolTip">
+             <string>Отредактировать выбранное мероприятие (F2)</string>
+            </property>
             <property name="text">
              <string>От&amp;редактировать выбранное</string>
             </property>
             <property name="icon">
              <iconset>
               <normaloff>resourses/edit.png</normaloff>resourses/edit.png</iconset>
+            </property>
+            <property name="shortcut">
+             <string>F2</string>
             </property>
            </widget>
           </item>
@@ -434,12 +482,18 @@
             <property name="enabled">
              <bool>false</bool>
             </property>
+            <property name="toolTip">
+             <string>Удалить выбранные мероприятия (Del)</string>
+            </property>
             <property name="text">
              <string>&amp;Удалить выбранное</string>
             </property>
             <property name="icon">
              <iconset>
               <normaloff>resourses/delete.png</normaloff>resourses/delete.png</iconset>
+            </property>
+            <property name="shortcut">
+             <string>Del</string>
             </property>
            </widget>
           </item>
@@ -533,27 +587,146 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="icon">
+        <iconset>
+         <normaloff>resourses/location.png</normaloff>resourses/location.png</iconset>
+       </attribute>
+       <attribute name="title">
+        <string>&amp;Локации</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_15">
+          <item>
+           <widget class="QLabel" name="label_7">
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Выберите бронирование для редактирования:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_7">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="locationsShowButton">
+            <property name="toolTip">
+             <string>Обзор типов (Ctrl+T)</string>
+            </property>
+            <property name="text">
+             <string>Места</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>resourses/maximize.png</normaloff>resourses/maximize.png</iconset>
+            </property>
+            <property name="shortcut">
+             <string>Ctrl+T</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="areasOpenButton">
+            <property name="text">
+             <string>Зоны</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>resourses/categorize.png</normaloff>resourses/categorize.png</iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_10">
+          <item>
+           <widget class="QPushButton" name="deleteSelectedReservationsPushButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>Удалить выбранные бронирования (Del)</string>
+            </property>
+            <property name="text">
+             <string>&amp;Удалить выбранное</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>resourses/delete.png</normaloff>resourses/delete.png</iconset>
+            </property>
+            <property name="shortcut">
+             <string>Del</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="selectedReservationsCountLabel">
+            <property name="text">
+             <string>0 из 1 выбрано</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QTableView" name="reservationsTableView">
+          <property name="selectionMode">
+           <enum>QAbstractItemView::SingleSelection</enum>
+          </property>
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+          <property name="sortingEnabled">
+           <bool>true</bool>
+          </property>
+          <attribute name="horizontalHeaderHighlightSections">
+           <bool>true</bool>
+          </attribute>
+          <attribute name="verticalHeaderVisible">
+           <bool>false</bool>
+          </attribute>
+          <attribute name="verticalHeaderCascadingSectionResizes">
+           <bool>true</bool>
+          </attribute>
+          <attribute name="verticalHeaderDefaultSectionSize">
+           <number>24</number>
+          </attribute>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
-  </widget>
-  <widget class="QMenuBar" name="menuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1004</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="menu">
-    <property name="title">
-     <string>&amp;Помещения</string>
-    </property>
-    <addaction name="action_2"/>
-    <addaction name="action_4"/>
-   </widget>
-   <addaction name="menu"/>
   </widget>
   <action name="action_2">
    <property name="icon">

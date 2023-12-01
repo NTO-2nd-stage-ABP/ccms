@@ -11,6 +11,7 @@ from app.db.models import (
     Place,
     Assignment,
     AssignmentType,
+    Reservation,
     Scope
 )
 from app.ui.dialogs import (
@@ -20,7 +21,7 @@ from app.ui.dialogs import (
     AssignmentCreateDialog,
 )
 from app.ui.dialogs.ext import AreaMangerDialog, AssignmentUpdateDialog
-from app.ui.models import SECTIONS, EventTableModel, WorkRequestTableModel
+from app.ui.models import SECTIONS, EventTableModel, AssignmentTableModel, ReservaionTableModel
 
 
 class Table(QWidget):
@@ -44,12 +45,14 @@ class MainWindow(QMainWindow):
         self.eventsTableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.worksTableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.desktopTableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.reservationsTableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
         self.refreshTableViews()
         
         self.eventsTypeMaximizePushButton.clicked.connect(lambda: self.showTypeManagerDialog(EventType, "Виды мероприятий:"))
         self.worksTypeMaximizePushButton.clicked.connect(lambda: self.showTypeManagerDialog(AssignmentType, "Виды работ:"))
-        self.action_2.triggered.connect(lambda: self.showTypeManagerDialog(Place, "Помещения:"))
+        self.locationsShowButton.clicked.connect(lambda: self.showTypeManagerDialog(Place, "Помещения:"))
+        self.areasOpenButton.clicked.connect(self.showAreasManager)
 
         self.newEventPushButton.clicked.connect(lambda: self.onCreateClicked(EventCreateDialog()))
         self.newWorkPushButton.clicked.connect(lambda: self.onCreateClicked(AssignmentCreateDialog()))
@@ -59,6 +62,7 @@ class MainWindow(QMainWindow):
         
         self.deleteSelectedEventsPushButton.clicked.connect(lambda: self.onDeleteRowsClicked(self.eventsTableView))
         self.deleteSelectedWorksPushButton.clicked.connect(lambda: self.onDeleteRowsClicked(self.worksTableView))
+        self.deleteSelectedReservationsPushButton.clicked.connect(lambda: self.onDeleteRowsClicked(self.reservationsTableView))
 
         self.completeSelectedDesktopPushButton.clicked.connect(self.onCompleteSelectedWorksPushButtonClicked)
 
@@ -72,7 +76,6 @@ class MainWindow(QMainWindow):
         self.comboBox.addItems(section for section in SECTIONS.values())
         self.pushButton_3.clicked.connect(self.filterByWorkSection)
         self.pushButton_4.clicked.connect(self.resetEventsFilter)
-        self.action_4.triggered.connect(self.showAreasManager)
         
     def showAreasManager(self):
         AreaMangerDialog().exec()
@@ -120,7 +123,7 @@ class MainWindow(QMainWindow):
                 statement = statement.where(self.work_requests_filter)
             data: Set[Assignment] = session.exec(statement).all()
 
-        self.desktopTableModel = WorkRequestTableModel(data)
+        self.desktopTableModel = AssignmentTableModel(data)
         self.desktopTableView.setModel(self.desktopTableModel)
         self.desktopTableView.selectionModel().selectionChanged.connect(
             self.onDesktopTableViewSelectionChanged
@@ -139,11 +142,15 @@ class MainWindow(QMainWindow):
                 statement = statement.where(self.events_filter)
             events = session.exec(statement).all()
             workRequests: Set[Assignment] = session.exec(select(Assignment)).all()
-            self.worksTableModel = WorkRequestTableModel(workRequests)
+            reservations: Set[Reservation] = session.exec(select(Reservation)).all()            
+            
+            self.worksTableModel = AssignmentTableModel(workRequests)
             self.eventsTableModel = EventTableModel(events)
+            self.reservationsTableModel = ReservaionTableModel(reservations)
 
         self.eventsTableView.setModel(self.eventsTableModel)
         self.worksTableView.setModel(self.worksTableModel)
+        self.reservationsTableView.setModel(self.reservationsTableModel)
 
         self.eventsTableView.selectionModel().selectionChanged.connect(
             self.onEventsTableViewSelectionChanged
@@ -151,13 +158,18 @@ class MainWindow(QMainWindow):
         self.worksTableView.selectionModel().selectionChanged.connect(
             self.onWorkTableViewSelectionChanged
         )
+        self.reservationsTableView.selectionModel().selectionChanged.connect(
+            self.onReservationsTableViewSelectionChanged
+        )
         
         self.deleteSelectedEventsPushButton.setEnabled(False)
         self.editSelectedEventsPushButton.setEnabled(False)
         self.editSelectedWorksPushButton.setEnabled(False)
         self.deleteSelectedWorksPushButton.setEnabled(False)
+        self.deleteSelectedReservationsPushButton.setEnabled(False)
         self.onWorkTableViewSelectionChanged()
         self.onEventsTableViewSelectionChanged()
+        self.onReservationsTableViewSelectionChanged()
 
     def onEditSelectedEventsPushButtonClicked(self):
         index = self.eventsTableView.selectedIndexes()[0].row()
@@ -206,6 +218,15 @@ class MainWindow(QMainWindow):
             self.desktopTableModel,
             self.completeSelectedDesktopPushButton,
             None  # Assuming there's no edit button for desktop items
+        )
+        
+    def onReservationsTableViewSelectionChanged(self):
+        self.updateSelection(
+            self.reservationsTableView,
+            self.selectedReservationsCountLabel,
+            self.reservationsTableModel,
+            self.deleteSelectedReservationsPushButton,
+            None  # Assuming there's no edit button for reservation items
         )
 
     def onCompleteSelectedWorksPushButtonClicked(self):

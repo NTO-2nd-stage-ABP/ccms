@@ -65,6 +65,7 @@ class AreaReservationLink(SQLModel, table=True):
     )
 
 
+# Location
 class Place(UniqueNamedModel, table=True):
     """A class representing a place.
 

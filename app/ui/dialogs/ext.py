@@ -170,6 +170,10 @@ class EventUpdateDialog(EventCreateDialog):
     def setup_ui(self) -> None:
         super().setup_ui()
 
+        # with Session(ENGINE) as session:
+        #     session.add(self.obj)
+        #     self.groupBox.setEnabled(any(self.obj.reservations))
+
         self.titleLineEdit.setText(self.obj.title)
         self.descriptionTextEdit.setPlainText(self.obj.description)
         self.dateDateTimeEdit.setDateTime(QtCore.QDateTime(self.obj.start_at))
