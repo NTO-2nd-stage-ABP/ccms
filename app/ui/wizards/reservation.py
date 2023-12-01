@@ -1,7 +1,7 @@
 from enum import StrEnum, auto
+from sqlmodel import Session, select, exists
 
 from PyQt6 import QtWidgets, QtCore, uic
-from sqlmodel import Session, select, exists
 
 from app.db import ENGINE
 from app.db.models import Area, Event, Place, Reservation

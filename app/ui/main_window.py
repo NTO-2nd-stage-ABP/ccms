@@ -15,11 +15,11 @@ from app.db.models import (
 )
 from app.ui.dialogs import (
     TypeManagerDialog,
-    CreateEventDialog,
-    EditEventDialog,
-    CreateWorkDialog,
+    EventCreateDialog,
+    EventUpdateDialog,
+    AssignmentCreateDialog,
 )
-from app.ui.dialogs.ext import AreaMangerDialog, EditWorksDialog
+from app.ui.dialogs.ext import AreaMangerDialog, AssignmentUpdateDialog
 from app.ui.models import SECTIONS, EventTableModel, WorkRequestTableModel
 
 
@@ -51,8 +51,8 @@ class MainWindow(QMainWindow):
         self.worksTypeMaximizePushButton.clicked.connect(lambda: self.showTypeManagerDialog(AssignmentType, "Виды работ:"))
         self.action_2.triggered.connect(lambda: self.showTypeManagerDialog(Place, "Помещения:"))
 
-        self.newEventPushButton.clicked.connect(lambda: self.onCreateClicked(CreateEventDialog()))
-        self.newWorkPushButton.clicked.connect(lambda: self.onCreateClicked(CreateWorkDialog()))
+        self.newEventPushButton.clicked.connect(lambda: self.onCreateClicked(EventCreateDialog()))
+        self.newWorkPushButton.clicked.connect(lambda: self.onCreateClicked(AssignmentCreateDialog()))
         
         self.editSelectedEventsPushButton.clicked.connect(self.onEditSelectedEventsPushButtonClicked)
         self.editSelectedWorksPushButton.clicked.connect(self.onEditSelectedWorksPushButtonClicked)
@@ -161,12 +161,12 @@ class MainWindow(QMainWindow):
 
     def onEditSelectedEventsPushButtonClicked(self):
         index = self.eventsTableView.selectedIndexes()[0].row()
-        dlg = EditEventDialog(self.eventsTableModel._data[index])
+        dlg = EventUpdateDialog(self.eventsTableModel._data[index])
         dlg.exec()
 
     def onEditSelectedWorksPushButtonClicked(self):
         index = self.worksTableView.selectedIndexes()[0].row()
-        dlg = EditWorksDialog(self.worksTableModel._data[index])
+        dlg = AssignmentUpdateDialog(self.worksTableModel._data[index])
         dlg.exec()
         self.refreshDesktop()
 

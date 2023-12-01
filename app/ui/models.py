@@ -158,25 +158,25 @@ class BaseTableModel(Generic[TModel], QAbstractTableModel):
                 session.add(item)
                 return list(self.GENERATORS.values())[index.column()](item)
 
-    def insertRow(self, row: int, parent: QModelIndex = QModelIndex(), dlg=None) -> bool:
-        self.beginInsertRows(parent, row, row)
+    # def insertRow(self, row: int, parent: QModelIndex = QModelIndex(), dlg=None) -> bool:
+    #     self.beginInsertRows(parent, row, row)
 
-        name = f"Объект ({self.rowCount()})"
+    #     name = f"Объект ({self.rowCount()})"
 
-        # if self.isUniqueNameConstraintFailed(name):
-            # self._showUniqueNameConstraintWarning(name)
-            # return False
+    #     # if self.isUniqueNameConstraintFailed(name):
+    #         # self._showUniqueNameConstraintWarning(name)
+    #         # return False
 
-        with Session(ENGINE) as session:
-            newObj: TBaseNamedModel = self._getGenericType()(name=name)
-            session.add(newObj)
-            session.commit()
-            session.refresh(newObj)
+    #     with Session(ENGINE) as session:
+    #         newObj: TBaseNamedModel = self._getGenericType()(name=name)
+    #         session.add(newObj)
+    #         session.commit()
+    #         session.refresh(newObj)
 
-        self._data.append(newObj)
+    #     self._data.append(newObj)
 
-        self.endInsertRows()
-        return True
+    #     self.endInsertRows()
+    #     return True
 
     def removeRow(
         self, row: int, delete=True, parent: QModelIndex = QModelIndex()
@@ -207,10 +207,10 @@ class EventTableModel(BaseTableModel[Event]):
 
 class WorkRequestTableModel(BaseTableModel[Assignment]):
     GENERATORS = {
-        "Помещение": lambda r: r.room.name if r.room else None,
+        "Помещение": lambda r: r.place.name if r.place else None,
         "Разновидность": lambda r: r.type.name,
-        "Мероприятие": lambda r: r.event.name,
-        "Статус": lambda r: STATUSES[r.status.value],
+        "Мероприятие": lambda r: r.event.title if r.event else None,
+        "Статус": lambda r: STATUSES[r.state.value],
         "Дедлайн": lambda r: r.deadline.strftime("%d.%m.%Y %H:%M"),
         "Дата создания": lambda r: r.created_at.strftime("%d.%m.%Y %H:%M"),
         "Описание": lambda r: r.description,
