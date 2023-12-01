@@ -24,12 +24,6 @@ from app.ui.dialogs.ext import AreaMangerDialog, AssignmentUpdateDialog
 from app.ui.models import SECTIONS, EventTableModel, AssignmentTableModel, ReservaionTableModel
 
 
-class Table(QWidget):
-    def __init__(self, *args, **kwargs):
-        super().__init__()
-        pass
-
-
 class MainWindow(QMainWindow):
     """
     Represents the Main-Window of this application.
