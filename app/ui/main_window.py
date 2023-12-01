@@ -169,6 +169,7 @@ class MainWindow(QMainWindow):
         index = self.eventsTableView.selectedIndexes()[0].row()
         dlg = EventUpdateDialog(self.eventsTableModel._data[index])
         dlg.exec()
+        self.refreshTableViews()
 
     def onEditSelectedWorksPushButtonClicked(self):
         index = self.worksTableView.selectedIndexes()[0].row()

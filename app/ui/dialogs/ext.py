@@ -11,6 +11,7 @@ from app.db.models import (
     Event,
     AssignmentType,
     Place,
+    Reservation,
     Scope,
     Assignment,
 )
@@ -122,38 +123,44 @@ class EventCreateDialog(DialogView):
 
         self.typeComboBox.addItems(eventTypeNames)
         self.dateDateTimeEdit.setMinimumDateTime(QtCore.QDateTime.currentDateTime())
+        
+    def getEvent(self) -> Event:
+        return Event()
 
     def create(self, commit=True) -> Event:
         with Session(ENGINE) as session:
-            self.obj.title = self.titleLineEdit.text()
-            self.obj.start_at = self.dateDateTimeEdit.dateTime().toPyDateTime()
-            self.obj.description = self.descriptionTextEdit.toPlainText()
-            self.obj.type_id = session.exec(select(EventType.id).where(EventType.name == self.typeComboBox.currentText())).first()
-            self.obj.scope = next(scope for scope, radio in self.scope_radios.items() if radio.isChecked())
-
-            session.add(self.obj)
-
+            event = self.getEvent()
+            event.title = self.titleLineEdit.text()
+            event.start_at = self.dateDateTimeEdit.dateTime().toPyDateTime()
+            event.description = self.descriptionTextEdit.toPlainText()
+            event.type_id = session.exec(select(EventType.id).where(EventType.name == self.typeComboBox.currentText())).first()
+            event.scope = next(scope for scope, radio in self.scope_radios.items() if radio.isChecked())
+            
+            session.add(event)
             if commit:
+                if hasattr(self, "reservation"):
+                    session.add(self.reservation)
                 session.commit()
             else:
                 session.flush()
+        return event
                 
     def showReservationWizard(self):
-        self.create(False)
+        event = self.create(False)
 
-        wizard = ReservationWizard(self.obj)
+        wizard = ReservationWizard(event)
 
         if not wizard.exec():
             return
 
         with Session(ENGINE) as session:
             place = session.get(Place, wizard.reservation.place_id)
-
-        self.obj.place_id = place.id
-        self.placeLabel.setText(place.name)
-        self.areasLabel.setEnabled(any(wizard.reservation.areas))
-        self.areasListWidget.clear()
-        self.areasListWidget.addItems(area.name for area in wizard.reservation.areas)
+            event.place_id = place.id
+            self.reservation = wizard.reservation
+            self.placeLabel.setText(place.name)
+            self.areasLabel.setEnabled(any(wizard.reservation.areas))
+            self.areasListWidget.clear()
+            self.areasListWidget.addItems(area.name for area in wizard.reservation.areas)
 
     def accept(self) -> None:
         if not self.titleLineEdit.text():
@@ -170,9 +177,14 @@ class EventUpdateDialog(EventCreateDialog):
     def setup_ui(self) -> None:
         super().setup_ui()
 
-        # with Session(ENGINE) as session:
-        #     session.add(self.obj)
-        #     self.groupBox.setEnabled(any(self.obj.reservations))
+        with Session(ENGINE) as session:
+            session.add(self.obj)
+            
+            if any(self.obj.reservations):
+                self.groupBox.setEnabled(False)
+                reservation = session.exec(select(Reservation).where(Reservation.event_id == self.obj.id)).first()
+                self.placeLabel.setText(reservation.place.name)
+                self.areasListWidget.addItems(area.name for area in reservation.areas)
 
         self.titleLineEdit.setText(self.obj.title)
         self.descriptionTextEdit.setPlainText(self.obj.description)
@@ -181,6 +193,9 @@ class EventUpdateDialog(EventCreateDialog):
 
         if self.obj.type:
             self.typeComboBox.setCurrentIndex(self.typeComboBox.findText(self.obj.type.name))
+
+    def getEvent(self) -> Event:
+        return self.obj
 
 
 class AssignmentCreateDialog(DialogView):
