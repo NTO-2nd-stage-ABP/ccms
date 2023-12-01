@@ -244,6 +244,8 @@ class MainWindow(QMainWindow):
 
         for index in tableView.selectionModel().selectedRows():
             tableView.model().removeRow(index.row())
+            
+        self.refreshTableViews()
 
     def showConfirmationWarning(self):
         return QMessageBox.question(

@@ -13,7 +13,11 @@ class WidgetMixin:
         if self.ui_path:
             uic.loadUi(self.ui_path, self)
 
-        self.setWindowTitle(self.get_title())
+        title = self.get_title()
+
+        if title:
+            self.setWindowTitle(title)
+
         self.setup_ui()
         
     def setup_ui(self):
