@@ -200,7 +200,7 @@ class EventTableModel(BaseTableModel[Event]):
         "Заголовок": lambda e: e.title,
         "Пространство": lambda e: SECTIONS[e.scope.value],
         "Разновидность": lambda e: e.type.name if e.type else None,
-        "Помещение": lambda e: e.place.name if e.place else None,
+        "Помещение": lambda e: str.join(", ", (r.place.name for r in e.reservations)) if any(e.reservations) else None,
         "Дата начала": lambda e: e.start_at.strftime("%d.%m.%Y %H:%M"),
         "Дата создания": lambda e: e.created_at.strftime("%d.%m.%Y %H:%M"),
         "Описание": lambda e: e.description,
@@ -235,7 +235,7 @@ class AssignmentTableModel(BaseTableModel[Assignment]):
 class ReservaionTableModel(BaseTableModel[Reservation]):
     GENERATORS = {
         "Помещение": lambda r: r.place.name if r.place else None,
-        "Зоны": lambda r: str.join(", ", (area.name for area in r.areas)) if any(r.areas) else None,
+        "Зоны": lambda r: str.join(", ", (a.name for a in r.areas)) if any(r.areas) else None,
         "Мероприятие": lambda r: r.event.title if r.event else None,
         "Дата начала": lambda r: r.start_at.strftime("%d.%m.%Y %H:%M"),
         "Дата конца": lambda r: r.end_at.strftime("%d.%m.%Y %H:%M"),

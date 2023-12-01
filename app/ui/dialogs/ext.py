@@ -94,9 +94,7 @@ class DialogView(QtWidgets.QDialog, WidgetMixin):
 
     @property
     def obj(self):
-        if not self._obj:
-            self._obj = self.model()
-        return self._obj
+        return self._obj or self.model()
 
     @obj.setter
     def obj(self, value) -> None:
@@ -123,13 +121,11 @@ class EventCreateDialog(DialogView):
 
         self.typeComboBox.addItems(eventTypeNames)
         self.dateDateTimeEdit.setMinimumDateTime(QtCore.QDateTime.currentDateTime())
-        
-    def getEvent(self) -> Event:
-        return Event()
 
     def create(self, commit=True) -> Event:
         with Session(ENGINE) as session:
-            event = self.getEvent()
+            event = self.obj
+
             event.title = self.titleLineEdit.text()
             event.start_at = self.dateDateTimeEdit.dateTime().toPyDateTime()
             event.description = self.descriptionTextEdit.toPlainText()
@@ -155,7 +151,6 @@ class EventCreateDialog(DialogView):
 
         with Session(ENGINE) as session:
             place = session.get(Place, wizard.reservation.place_id)
-            event.place_id = place.id
             self.reservation = wizard.reservation
             self.placeLabel.setText(place.name)
             self.areasLabel.setEnabled(any(wizard.reservation.areas))
@@ -193,9 +188,6 @@ class EventUpdateDialog(EventCreateDialog):
 
         if self.obj.type:
             self.typeComboBox.setCurrentIndex(self.typeComboBox.findText(self.obj.type.name))
-
-    def getEvent(self) -> Event:
-        return self.obj
 
 
 class AssignmentCreateDialog(DialogView):
