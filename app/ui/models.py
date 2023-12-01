@@ -10,6 +10,7 @@ from PyQt6.QtCore import (
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QMessageBox
 from sqlmodel import Session
+from sqlalchemy.orm.session import make_transient
 
 from app.db import ENGINE
 from app.db.models import BaseModel, Reservation, UniqueNamedModel, Event, Assignment
@@ -72,7 +73,6 @@ class TypeListModel(Generic[TBaseNamedModel], QAbstractListModel):
         self._data.remove(item)
 
         with Session(ENGINE) as session:
-            session.add(item)
             session.delete(item)
             session.commit()
 
@@ -94,10 +94,13 @@ class TypeListModel(Generic[TBaseNamedModel], QAbstractListModel):
             return False
 
         with Session(ENGINE) as session:
-            session.add(item)
-            item.name = value
+            obj = session.get(self._getGenericType(), item.id)
+            obj.name = value
+            session.add(obj)
             session.commit()
-            session.refresh(item)
+            session.refresh(obj)
+
+        item.name = value
 
         self.dataChanged.emit(index, index)
         return True

@@ -48,8 +48,8 @@ class MainWindow(QMainWindow):
         self.locationsShowButton.clicked.connect(lambda: self.showTypeManagerDialog(Place, "Помещения:"))
         self.areasOpenButton.clicked.connect(self.showAreasManager)
 
-        self.newEventPushButton.clicked.connect(lambda: self.onCreateClicked(EventCreateDialog()))
-        self.newWorkPushButton.clicked.connect(lambda: self.onCreateClicked(AssignmentCreateDialog()))
+        self.newEventPushButton.clicked.connect(lambda: self.onCreateClicked(EventCreateDialog(parent=self)))
+        self.newWorkPushButton.clicked.connect(lambda: self.onCreateClicked(AssignmentCreateDialog(parent=self)))
         
         self.editSelectedEventsPushButton.clicked.connect(self.onEditSelectedEventsPushButtonClicked)
         self.editSelectedWorksPushButton.clicked.connect(self.onEditSelectedWorksPushButtonClicked)
@@ -72,11 +72,11 @@ class MainWindow(QMainWindow):
         self.pushButton_4.clicked.connect(self.resetEventsFilter)
         
     def showAreasManager(self):
-        AreaMangerDialog().exec()
+        AreaMangerDialog(self).exec()
         self.refreshTableViews()
 
     def showTypeManagerDialog(self, _type, title):
-        TypeManagerDialog(_type, title).exec()
+        TypeManagerDialog(_type, title, self).exec()
         self.refreshTableViews()
     
     events_filter = None
@@ -167,13 +167,13 @@ class MainWindow(QMainWindow):
 
     def onEditSelectedEventsPushButtonClicked(self):
         index = self.eventsTableView.selectedIndexes()[0].row()
-        dlg = EventUpdateDialog(self.eventsTableModel._data[index])
+        dlg = EventUpdateDialog(self.eventsTableModel._data[index], self)
         dlg.exec()
         self.refreshTableViews()
 
     def onEditSelectedWorksPushButtonClicked(self):
         index = self.worksTableView.selectedIndexes()[0].row()
-        dlg = AssignmentUpdateDialog(self.worksTableModel._data[index])
+        dlg = AssignmentUpdateDialog(self.worksTableModel._data[index], self)
         dlg.exec()
         self.refreshDesktop()
 

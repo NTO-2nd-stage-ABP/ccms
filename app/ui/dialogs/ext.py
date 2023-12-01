@@ -22,8 +22,8 @@ from app.ui.wizards.reservation import ReservationWizard
 
 
 class TypeManagerDialog(QtWidgets.QDialog):
-    def __init__(self, _type, header) -> None:
-        super().__init__()
+    def __init__(self, _type, header, parent) -> None:
+        super().__init__(parent)
         uic.loadUi("app/ui/dialogs/type_manager.ui", self)
 
         with Session(ENGINE) as session:
@@ -52,8 +52,8 @@ class TypeManagerDialog(QtWidgets.QDialog):
 
 
 class AreaMangerDialog(TypeManagerDialog):
-    def __init__(self) -> None:
-        super().__init__(Area, "Части")
+    def __init__(self, parent) -> None:
+        super().__init__(Area, "Части", parent)
         self.combobox = QtWidgets.QComboBox()
         self.combobox.currentTextChanged.connect(self.updateModel)
 
@@ -144,7 +144,7 @@ class EventCreateDialog(DialogView):
     def showReservationWizard(self):
         event = self.create(False)
 
-        wizard = ReservationWizard(event)
+        wizard = ReservationWizard(event, self)
 
         if not wizard.exec():
             return
