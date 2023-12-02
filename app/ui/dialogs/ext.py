@@ -1,7 +1,7 @@
 from typing import Dict
 from sqlmodel import Session, select
 
-from PyQt6 import uic, QtWidgets, QtCore
+from PyQt6 import QtGui, uic, QtWidgets, QtCore
 
 from app.db import ENGINE
 from app.db.models import (
@@ -29,6 +29,8 @@ class TypeManagerDialog(QtWidgets.QDialog):
         with Session(ENGINE) as session:
             data = session.exec(select(_type)).all()
 
+        self.setFixedSize(self.size())
+
         self.label_2.setText(header)
         self.listViewModel = TypeListModel[_type](data, self)
         self.listView.setModel(self.listViewModel)
@@ -45,6 +47,7 @@ class TypeManagerDialog(QtWidgets.QDialog):
         self.listViewModel.insertRow(-1, **kwargs)
         index = self.listViewModel.index(self.listViewModel.rowCount() - 1, 0)
         self.listView.edit(index)
+        self.listView.setCurrentIndex(index)
 
     def onDelButtonClicked(self) -> None:
         currentRowIndex = self.listView.currentIndex().row()
@@ -78,7 +81,7 @@ class AreaMangerDialog(TypeManagerDialog):
 
         self.delButton.setDisabled(True)
         self.listView.selectionModel().selectionChanged.connect(
-            lambda: self.delButton.setDisabled(False)
+            lambda: self.delButton.setDisabled(not(bool(self.listView.selectedIndexes())))
         )
 
     def onAddButtonClicked(self) -> None:
@@ -91,6 +94,7 @@ class DialogView(QtWidgets.QDialog, WidgetMixin):
     def __init__(self, obj=None, parent: QtWidgets.QWidget | None = None) -> None:
         self.obj = obj
         super().__init__(parent)
+        self.setFixedSize(self.size())
 
     @property
     def obj(self):

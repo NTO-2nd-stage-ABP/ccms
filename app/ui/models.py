@@ -42,11 +42,7 @@ class TypeListModel(Generic[TBaseNamedModel], QAbstractListModel):
     ) -> bool:
         self.beginInsertRows(parent, row, row)
 
-        name = f"Объект ({self.rowCount()})"
-
-        if self.isUniqueNameConstraintFailed(name):
-            self._showUniqueNameConstraintWarning(name)
-            return False
+        name = self._generateUniqueName()
 
         with Session(ENGINE) as session:
             newObj: TBaseNamedModel = self._getGenericType()(name=name, **kwargs)
@@ -114,6 +110,15 @@ class TypeListModel(Generic[TBaseNamedModel], QAbstractListModel):
 
     def isUniqueNameConstraintFailed(self, name: str) -> bool:
         return any(item.name == name for item in self._data)
+
+    def _generateUniqueName(self):
+        i = 0
+        row_count = self.rowCount()
+        name = f"Объект ({row_count})"
+        while self.isUniqueNameConstraintFailed(name):
+            name = f"Объект ({row_count + i})"
+            i += 1
+        return name
 
     def _showUniqueNameConstraintWarning(self, name: str) -> None:
         QMessageBox.critical(
