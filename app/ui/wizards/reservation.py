@@ -51,6 +51,7 @@ class ResultsPage(QtWidgets.QWizardPage):
         self.listWidget.clear()
 
         start_at = self.field(Fields.START_AT).toPyDateTime()
+        end_at = self.field(Fields.END_AT).toPyDateTime()
         
         # Так писать нельзя, позже отрефакторю! Но оно работает :)
         with Session(ENGINE) as session:
@@ -64,8 +65,8 @@ class ResultsPage(QtWidgets.QWizardPage):
                     continue
 
                 # Бронирование не пересекается
-                if (any(reservation.end_at < start_at for reservation in place.reservations)
-                    or any(reservation.start_at > start_at for reservation in place.reservations)):
+                if (any(reservation.start_at < reservation.end_at < start_at < end_at for reservation in place.reservations)
+                    or any(start_at < end_at < reservation.start_at < reservation.end_at for reservation in place.reservations)):
 
                     # Нет зон
                     if not(any(place.areas)):
@@ -80,8 +81,8 @@ class ResultsPage(QtWidgets.QWizardPage):
                             break
                         
                         # Бронирование не пересекается
-                        if (any(reservation.end_at < start_at for reservation in area.reservations)
-                            or any(reservation.start_at > start_at for reservation in area.reservations)):
+                        if (any(reservation.start_at < reservation.end_at < start_at < end_at for reservation in area.reservations)
+                            or any(start_at < end_at < reservation.start_at < reservation.end_at for reservation in area.reservations)):
                             free.append(place)
                             break
 
@@ -95,8 +96,8 @@ class ResultsPage(QtWidgets.QWizardPage):
                         break
                     
                     # Бронирование не пересекается
-                    if (any(reservation.end_at < start_at for reservation in area.reservations)
-                        or any(reservation.start_at > start_at for reservation in area.reservations)):
+                    if (any(reservation.start_at < reservation.end_at < start_at < end_at for reservation in area.reservations)
+                        or any(start_at < end_at < reservation.start_at < reservation.end_at for reservation in area.reservations)):
                         free.append(place)
                         break
 
@@ -145,7 +146,8 @@ class AreasPage(QtWidgets.QWizardPage):
         self.listWidget.clear()
         self.reserveAllCheckBox.setChecked(False)
 
-        start_at = self.field(Fields.START_AT).toPyDateTime()        
+        start_at = self.field(Fields.START_AT).toPyDateTime()
+        end_at = self.field(Fields.END_AT).toPyDateTime()
         place_id: int = self.field(Fields.PLACE_ID)
 
         with Session(ENGINE) as session:
@@ -160,8 +162,8 @@ class AreasPage(QtWidgets.QWizardPage):
                     is_busy = False
     
                 # Бронирование не пересекается
-                if (any(reservation.end_at < start_at for reservation in area.reservations)
-                    or any(reservation.start_at > start_at for reservation in area.reservations)):
+                if (any(reservation.start_at < reservation.end_at < start_at < end_at for reservation in area.reservations)
+                    or any(start_at < end_at < reservation.start_at < reservation.end_at for reservation in area.reservations)):
                     is_busy = False
                 
                 flags = QtCore.Qt.ItemFlag.NoItemFlags if is_busy else QtCore.Qt.ItemFlag.ItemIsEnabled
