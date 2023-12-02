@@ -29,8 +29,6 @@ class TypeManagerDialog(QtWidgets.QDialog):
         with Session(ENGINE) as session:
             data = session.exec(select(_type)).all()
 
-        self.setFixedSize(self.size())
-
         self.label_2.setText(header)
         self.listViewModel = TypeListModel[_type](data, self)
         self.listView.setModel(self.listViewModel)
@@ -94,7 +92,6 @@ class DialogView(QtWidgets.QDialog, WidgetMixin):
     def __init__(self, obj=None, parent: QtWidgets.QWidget | None = None) -> None:
         self.obj = obj
         super().__init__(parent)
-        self.setFixedSize(self.size())
 
     @property
     def obj(self):
