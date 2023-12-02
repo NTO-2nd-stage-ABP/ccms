@@ -220,14 +220,15 @@ class AssignmentCreateDialog(DialogView):
 
     def accept(self) -> None:
         with Session(ENGINE) as session:
-            self.obj.state = next(scope for scope, radio in self.state_radios.items() if radio.isChecked())
-            self.obj.deadline = self.dateDateTimeEdit.dateTime().toPyDateTime()
-            self.obj.description = self.descriptionTextEdit.toPlainText()
-            self.obj.event_id = session.exec(select(Event.id).where(Event.title == self.eventComboBox.currentText())).first()
-            self.obj.place_id = session.exec(select(Place.id).where(Place.name == self.roomComboBox.currentText())).first()
-            self.obj.type_id = session.exec(select(AssignmentType.id).where(AssignmentType.name == self.typeComboBox.currentText())).first()
+            assignment: Assignment = self.obj
+            assignment.state = next(scope for scope, radio in self.state_radios.items() if radio.isChecked())
+            assignment.deadline = self.dateDateTimeEdit.dateTime().toPyDateTime()
+            assignment.description = self.descriptionTextEdit.toPlainText()
+            assignment.event_id = session.exec(select(Event.id).where(Event.title == self.eventComboBox.currentText())).first()
+            assignment.place_id = session.exec(select(Place.id).where(Place.name == self.roomComboBox.currentText())).first()
+            assignment.type_id = session.exec(select(AssignmentType.id).where(AssignmentType.name == self.typeComboBox.currentText())).first()
 
-            session.add(self.obj)
+            session.add(assignment)
             session.commit()
 
         return super().accept()
