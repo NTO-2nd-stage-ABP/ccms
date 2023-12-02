@@ -64,7 +64,8 @@ class ResultsPage(QtWidgets.QWizardPage):
                     continue
 
                 # Бронирование не пересекается
-                if any(reservation.end_at < start_at for reservation in place.reservations):
+                if (any(reservation.end_at < start_at for reservation in place.reservations)
+                    or any(reservation.start_at > start_at for reservation in place.reservations)):
 
                     # Нет зон
                     if not(any(place.areas)):
@@ -79,7 +80,8 @@ class ResultsPage(QtWidgets.QWizardPage):
                             break
                         
                         # Бронирование не пересекается
-                        if any(reservation.end_at < start_at for reservation in area.reservations):
+                        if (any(reservation.end_at < start_at for reservation in area.reservations)
+                            or any(reservation.start_at > start_at for reservation in area.reservations)):
                             free.append(place)
                             break
 
@@ -93,7 +95,8 @@ class ResultsPage(QtWidgets.QWizardPage):
                         break
                     
                     # Бронирование не пересекается
-                    if any(reservation.end_at < start_at for reservation in area.reservations):
+                    if (any(reservation.end_at < start_at for reservation in area.reservations)
+                        or any(reservation.start_at > start_at for reservation in area.reservations)):
                         free.append(place)
                         break
 
@@ -155,9 +158,10 @@ class AreasPage(QtWidgets.QWizardPage):
                 # Полностью пустое
                 if not any(area.reservations):
                     is_busy = False
-                
+    
                 # Бронирование не пересекается
-                if any(reservation.end_at < start_at for reservation in area.reservations):
+                if (any(reservation.end_at < start_at for reservation in area.reservations)
+                    or any(reservation.start_at > start_at for reservation in area.reservations)):
                     is_busy = False
                 
                 flags = QtCore.Qt.ItemFlag.NoItemFlags if is_busy else QtCore.Qt.ItemFlag.ItemIsEnabled
