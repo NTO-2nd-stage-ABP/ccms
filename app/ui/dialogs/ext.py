@@ -10,7 +10,7 @@ from app.db.models import (
     EventType,
     Event,
     AssignmentType,
-    Place,
+    Location,
     Reservation,
     Scope,
     Assignment,
@@ -20,16 +20,43 @@ from app.ui.models import TypeListModel
 from app.ui.dialogs.alerts import validationError
 from app.ui.wizards.reservation import ReservationWizard
 
+from datetime import datetime
+
+from PyQt6 import QtCore, QtWidgets
+
+DATE_FORMAT = "%d-%b-%y"
+
+
+class DateDelegate(QtWidgets.QStyledItemDelegate):
+    def createEditor(self, parent, option, index):
+        widget = QtWidgets.QDateEdit(parent)
+        widget.setCalendarPopup(True)
+        return widget
+
+    def setEditorData(self, editor, index):
+        if isinstance(editor, QtWidgets.QDateEdit):
+            dt_str = index.data(QtCore.Qt.ItemDataRole.EditRole)
+            dt = datetime.strptime(dt_str, DATE_FORMAT)
+            editor.setDate(dt)
+            return
+        super().setEditorData(editor, index)
+
+    def setModelData(self, editor, model, index):
+        if isinstance(editor, QtWidgets.QDateEdit):
+            dt = editor.date().toPyDate()
+            model.setData(index, dt, QtCore.Qt.ItemDataRole.EditRole)
+            return
+        super().setModelData(editor, model, index)
+        
 
 class TypeManagerDialog(QtWidgets.QDialog):
-    def __init__(self, _type, header, parent) -> None:
+    def __init__(self, _type, parent) -> None:
         super().__init__(parent)
         uic.loadUi("app/ui/dialogs/type_manager.ui", self)
 
         with Session(ENGINE) as session:
             data = session.exec(select(_type)).all()
 
-        self.label_2.setText(header)
         self.listViewModel = TypeListModel[_type](data, self)
         self.listView.setModel(self.listViewModel)
 
@@ -52,14 +79,14 @@ class TypeManagerDialog(QtWidgets.QDialog):
         self.listViewModel.removeRow(currentRowIndex)
 
 
-class AreaMangerDialog(TypeManagerDialog):
+class AreaManagerDialog(TypeManagerDialog):
     def __init__(self, parent) -> None:
-        super().__init__(Area, "Части", parent)
+        super().__init__(Area, parent)
         self.combobox = QtWidgets.QComboBox()
         self.combobox.currentTextChanged.connect(self.updateModel)
 
         with Session(ENGINE) as session:
-            self.names = session.exec(select(Place.name)).all()
+            self.names = session.exec(select(Location.name)).all()
 
         self.combobox.addItems(name for name in self.names)
         self.verticalLayout_4.addWidget(self.combobox)
@@ -72,8 +99,8 @@ class AreaMangerDialog(TypeManagerDialog):
 
     def updateModel(self, name: str):
         with Session(ENGINE) as session:
-            self.place = session.exec(select(Place).where(Place.name == name)).first()
-            self.listViewModel = TypeListModel[Area](self.place.areas, self)
+            self.location = session.exec(select(Location).where(Location.name == name)).first()
+            self.listViewModel = TypeListModel[Area](self.location.areas, self)
 
         self.listView.setModel(self.listViewModel)
 
@@ -83,7 +110,7 @@ class AreaMangerDialog(TypeManagerDialog):
         )
 
     def onAddButtonClicked(self) -> None:
-        super().onAddButtonClicked(place_id=self.place.id)
+        super().onAddButtonClicked(location_id=self.location.id)
 
 
 class DialogView(QtWidgets.QDialog, WidgetMixin):
@@ -151,9 +178,9 @@ class EventCreateDialog(DialogView):
             return
 
         with Session(ENGINE) as session:
-            place = session.get(Place, wizard.reservation.place_id)
+            location = session.get(Location, wizard.reservation.location_id)
             self.reservation = wizard.reservation
-            self.placeLabel.setText(place.name)
+            self.locationLabel.setText(location.name)
             self.areasLabel.setEnabled(any(wizard.reservation.areas))
             self.areasListWidget.clear()
             self.areasListWidget.addItems(area.name for area in wizard.reservation.areas)
@@ -179,7 +206,7 @@ class EventUpdateDialog(EventCreateDialog):
             if any(self.obj.reservations):
                 self.groupBox.setEnabled(False)
                 reservation = session.exec(select(Reservation).where(Reservation.event_id == self.obj.id)).first()
-                self.placeLabel.setText(reservation.place.name)
+                self.locationLabel.setText(reservation.location.name)
                 self.areasListWidget.addItems(area.name for area in reservation.areas)
 
         self.titleLineEdit.setText(self.obj.title)
@@ -208,7 +235,7 @@ class AssignmentCreateDialog(DialogView):
 
         with Session(ENGINE) as session:
             workTypeNames = session.exec(select(AssignmentType.name)).all()
-            roomTypeNames = session.exec(select(Place.name)).all()
+            roomTypeNames = session.exec(select(Location.name)).all()
             eventNames = session.exec(select(Event.title)).all()
 
         self.typeComboBox.addItems(eventTypeName for eventTypeName in workTypeNames)
@@ -222,7 +249,7 @@ class AssignmentCreateDialog(DialogView):
             assignment.deadline = self.dateDateTimeEdit.dateTime().toPyDateTime()
             assignment.description = self.descriptionTextEdit.toPlainText()
             assignment.event_id = session.exec(select(Event.id).where(Event.title == self.eventComboBox.currentText())).first()
-            assignment.place_id = session.exec(select(Place.id).where(Place.name == self.roomComboBox.currentText())).first()
+            assignment.location_id = session.exec(select(Location.id).where(Location.name == self.roomComboBox.currentText())).first()
             assignment.type_id = session.exec(select(AssignmentType.id).where(AssignmentType.name == self.typeComboBox.currentText())).first()
 
             session.add(assignment)
@@ -245,11 +272,12 @@ class AssignmentUpdateDialog(AssignmentCreateDialog):
             self.typeComboBox.setCurrentIndex(self.typeComboBox.findText(self.obj.type.name))
         if self.obj.event:
             self.eventComboBox.setCurrentIndex(self.eventComboBox.findText(self.obj.event.title))
-        if self.obj.place:
-            self.roomComboBox.setCurrentIndex(self.roomComboBox.findText(self.obj.place.name))
+        if self.obj.location:
+            self.roomComboBox.setCurrentIndex(self.roomComboBox.findText(self.obj.location.name))
 
 
 __all__ = [
+    "AreaManagerDialog",
     "TypeManagerDialog",
     "EventCreateDialog",
     "EventUpdateDialog",

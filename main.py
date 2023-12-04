@@ -1,6 +1,6 @@
-from app import init
+from app import startup
 
 if __name__ == "__main__":
     import sys
 
-    sys.exit(init.run())
+    sys.exit(startup.run())

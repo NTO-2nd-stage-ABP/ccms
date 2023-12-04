@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import Optional, List
+from typing import Optional, List, Set
 from datetime import datetime
 
 from sqlmodel import SQLModel, Field, Relationship
@@ -20,6 +20,17 @@ class Scope(Enum):
     ENTERTAINMENT = auto()
     ENLIGHTENMENT = auto()
     EDUCATION = auto()
+
+
+# флаги7
+class Weekday(Enum):
+    MONDAY = auto()
+    TUESDAY = auto()
+    WEDNESDAY = auto()
+    THURSDAY = auto()
+    FRIDAY = auto()
+    SATURDAY = auto()
+    SUNDAY = auto()
 
 
 class BaseModel(SQLModel):
@@ -65,25 +76,24 @@ class AreaReservationLink(SQLModel, table=True):
     )
 
 
-# Location
-class Place(UniqueNamedModel, table=True):
-    """A class representing a place.
+class Location(UniqueNamedModel, table=True):
+    """A class representing a location.
 
     Attributes:
-        areas (List[Area]): The list of areas associated with this place.
-        events (List[Event]): The list of events associated with this place.
-        assignments (List[Assignment]): The list of assignments associated with this place.
-        reservations (List[Reservation]): The list of reservations associated with this place.
+        areas (List[Area]): The list of areas associated with this location.
+        events (List[Event]): The list of events associated with this location.
+        assignments (List[Assignment]): The list of assignments associated with this location.
+        reservations (List[Reservation]): The list of reservations associated with this location.
     """
 
     areas: List["Area"] = Relationship(
-        back_populates="place",
+        back_populates="location",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
-    events: List["Event"] = Relationship(back_populates="place")
-    assignments: List["Assignment"] = Relationship(back_populates="place")
+    events: List["Event"] = Relationship(back_populates="location")
+    assignments: List["Assignment"] = Relationship(back_populates="location")
     reservations: List["Reservation"] = Relationship(
-        back_populates="place",
+        back_populates="location",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
     
@@ -92,25 +102,25 @@ class Place(UniqueNamedModel, table=True):
 
 
 class Area(BaseModel, table=True):
-    """A class representing a part of a place.
+    """A class representing a part of a location.
 
     Attributes:
         name (str): The unique name of this area.
-        place_id (Optional[int]): The unique identifier of the associated place.
-        place (Optional[Place]): The place associated with this area.
+        location_id (Optional[int]): The unique identifier of the associated location.
+        location (Optional[Location]): The location associated with this area.
         reservations (List[Reservation]): The list of reservations associated with this area.
     """
 
     name: str = Field(max_length=128, index=True)
 
-    place_id: Optional[int] = Field(default=None, foreign_key="Place.id")
-    place: Optional[Place] = Relationship(back_populates="areas")
+    location_id: Optional[int] = Field(default=None, foreign_key="Location.id")
+    location: Optional[Location] = Relationship(back_populates="areas")
 
     reservations: List["Reservation"] = Relationship(
         back_populates="areas", link_model=AreaReservationLink
     )
 
-    __table_args__ = (UniqueConstraint("name", "place_id"),)
+    __table_args__ = (UniqueConstraint("name", "location_id"),)
 
 
 class EventType(UniqueNamedModel, table=True):
@@ -133,8 +143,8 @@ class Event(BaseModel, table=True):
         scope (Scope): The scope of the event.
         type_id (Optional[int]): The unique identifier of the associated event type.
         type (Optional[EventType]): The event type associated with this event.
-        place_id (Optional[int]): The unique identifier of the associated place.
-        place (Optional[Place]): The associated place of the event.
+        location_id (Optional[int]): The unique identifier of the associated location.
+        location (Optional[Location]): The associated location of the event.
         assignments (List[Assignment]): The list of assignments associated with this event.
         reservations (List[Reservation]): The list of reservations associated with this event.
     """
@@ -147,8 +157,8 @@ class Event(BaseModel, table=True):
     type_id: Optional[int] = Field(default=None, foreign_key="EventType.id")
     type: Optional[EventType] = Relationship(back_populates="events")
 
-    place_id: Optional[int] = Field(default=None, foreign_key="Place.id")
-    place: Optional[Place] = Relationship(back_populates="events")
+    location_id: Optional[int] = Field(default=None, foreign_key="Location.id")
+    location: Optional[Location] = Relationship(back_populates="events")
 
     assignments: List["Assignment"] = Relationship(back_populates="event")
     reservations: List["Reservation"] = Relationship(
@@ -178,8 +188,8 @@ class Assignment(BaseModel, table=True):
         event (Event): The event associated with this assignment.
         type_id (Optional[int]): The unique identifier of the assignment type.
         type (AssignmentType): The assignment type object.
-        place_id (Optional[int]): The unique identifier of the associated place.
-        place (Place): The place associated with this assignment.
+        location_id (Optional[int]): The unique identifier of the associated location.
+        location (Location): The location associated with this assignment.
     """
 
     class State(Enum):
@@ -202,15 +212,15 @@ class Assignment(BaseModel, table=True):
     type_id: Optional[int] = Field(default=None, foreign_key="AssignmentType.id")
     type: Optional[AssignmentType] = Relationship(back_populates="assignments")
 
-    place_id: Optional[int] = Field(default=None, foreign_key="Place.id")
-    place: Optional[Place] = Relationship(back_populates="assignments")
+    location_id: Optional[int] = Field(default=None, foreign_key="Location.id")
+    location: Optional[Location] = Relationship(back_populates="assignments")
 
     event_id: Optional[int] = Field(default=None, foreign_key="Event.id")
     event: Optional[Event] = Relationship(back_populates="assignments")
 
 
 class Reservation(BaseModel, table=True):
-    """A class representing a place reservation for an event.
+    """A class representing a location reservation for an event.
 
     Attributes:
         start_at (datetime): The start time of the reservation.
@@ -218,8 +228,8 @@ class Reservation(BaseModel, table=True):
         comment (Optional[str]): An optional comment for the reservation.
         event_id (Optional[int]): The unique identifier of the associated event.
         event (Event): The event associated with this reservation.
-        place_id (Optional[int]): The unique identifier of the associated place.
-        place (Place): The place associated with this reservation.
+        location_id (Optional[int]): The unique identifier of the associated location.
+        location (Location): The location associated with this reservation.
         areas (List[Area]): The list of areas associated with this reservation.
     """
 
@@ -230,9 +240,42 @@ class Reservation(BaseModel, table=True):
     event_id: Optional[int] = Field(default=None, foreign_key="Event.id")
     event: Event = Relationship(back_populates="reservations")
 
-    place_id: Optional[int] = Field(default=None, foreign_key="Place.id")
-    place: Place = Relationship(back_populates="reservations")
+    location_id: Optional[int] = Field(default=None, foreign_key="Location.id")
+    location: Location = Relationship(back_populates="reservations")
 
     areas: List[Area] = Relationship(
         back_populates="reservations", link_model=AreaReservationLink
     )
+
+
+# class Teacher(UniqueNamedModel, table=True):
+#     pass
+
+
+# class ClubType(UniqueNamedModel, table=True):
+#     pass
+
+
+# class ClubDay(BaseModel, table=True):
+#     weekday: Weekday
+#     start_at: datetime
+#     end_at: datetime
+    
+#     club_id = Optional[int] = Field(default=None, foreign_key="Club.id")
+#     club = Optional["Club"] = Relationship(back_populates="days")
+
+
+# class Club(BaseModel, table=True):
+#     title: str = Field(max_length=256, index=True)
+#     start_at: datetime
+    
+#     days: List[ClubDay]
+    
+#     type_id: Optional[int] = Field(default=None, foreign_key="ClubType.id")
+#     type: Optional[ClubType] = Relationship(back_populates="clubs")
+    
+#     location_id: Optional[int] = Field(default=None, foreign_key="Location.id")
+#     location: Location = Relationship(back_populates="clubs")
+    
+#     teacher_id: Optional[int] = Field(default=None, foreign_key="Teacher.id")
+#     teacher: Teacher = Relationship(back_populates="clubs")

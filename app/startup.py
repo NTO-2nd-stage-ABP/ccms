@@ -2,7 +2,7 @@ import sys
 
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import QTranslator, QLocale, QLibraryInfo
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QStyle
 
 from app.db import ENGINE
 from app.db.models import BaseModel

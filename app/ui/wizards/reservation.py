@@ -4,7 +4,7 @@ from sqlmodel import Session, select, exists
 from PyQt6 import QtWidgets, QtCore, uic
 
 from app.db import ENGINE
-from app.db.models import Area, Event, Place, Reservation
+from app.db.models import Area, Event, Location, Reservation
 
 
 class Fields(StrEnum):
@@ -55,53 +55,53 @@ class ResultsPage(QtWidgets.QWizardPage):
         
         # Так писать нельзя, позже отрефакторю! Но оно работает :)
         with Session(ENGINE) as session:
-            places = session.exec(select(Place)).all()
+            locations = session.exec(select(Location)).all()
             free = []
-            for place in places:
+            for location in locations:
 
                 # Полностью пустое
-                if not(any(place.areas) or any(place.reservations)):
-                    free.append(place)
+                if not(any(location.areas) or any(location.reservations)):
+                    free.append(location)
                     continue
 
                 # Бронирование не пересекается
-                if (any(reservation.start_at < reservation.end_at < start_at < end_at for reservation in place.reservations)
-                    or any(start_at < end_at < reservation.start_at < reservation.end_at for reservation in place.reservations)):
+                if (any(reservation.start_at < reservation.end_at < start_at < end_at for reservation in location.reservations)
+                    or any(start_at < end_at < reservation.start_at < reservation.end_at for reservation in location.reservations)):
 
                     # Нет зон
-                    if not(any(place.areas)):
-                        free.append(place)
+                    if not(any(location.areas)):
+                        free.append(location)
                         continue
                     
-                    for area in place.areas:
+                    for area in location.areas:
                         
                         # Полностью пустое
                         if not any(area.reservations):
-                            free.append(place)
+                            free.append(location)
                             break
                         
                         # Бронирование не пересекается
                         if (any(reservation.start_at < reservation.end_at < start_at < end_at for reservation in area.reservations)
                             or any(start_at < end_at < reservation.start_at < reservation.end_at for reservation in area.reservations)):
-                            free.append(place)
+                            free.append(location)
                             break
 
                     continue
 
-                for area in place.areas:
+                for area in location.areas:
                         
                     # Полностью пустое
                     if not any(area.reservations):
-                        free.append(place)
+                        free.append(location)
                         break
                     
                     # Бронирование не пересекается
                     if (any(reservation.start_at < reservation.end_at < start_at < end_at for reservation in area.reservations)
                         or any(start_at < end_at < reservation.start_at < reservation.end_at for reservation in area.reservations)):
-                        free.append(place)
+                        free.append(location)
                         break
 
-            names = list(place.name for place in free)
+            names = list(location.name for location in free)
 
         self.listWidget.addItems(names)
 
@@ -116,8 +116,8 @@ class ResultsPage(QtWidgets.QWizardPage):
     def validatePage(self) -> bool:        
         with Session(ENGINE) as session:
             name = self.listWidget.currentItem().data(QtCore.Qt.ItemDataRole.DisplayRole)
-            place_id = session.exec(select(Place.id).where(Place.name == name)).first()
-            self.setField(Fields.PLACE_ID, place_id)
+            location_id = session.exec(select(Location.id).where(Location.name == name)).first()
+            self.setField(Fields.PLACE_ID, location_id)
 
         return super().validatePage()
 
@@ -126,7 +126,7 @@ class AreasPage(QtWidgets.QWizardPage):
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
         uic.loadUi("app/ui/wizards/areas-page.ui", self)
-        self.place = None
+        self.location = None
         lst = QtWidgets.QListWidget(self)
         lst.setVisible(False)
         self.registerField(Fields.AREA_IDS, lst, "selectedItems")
@@ -148,11 +148,11 @@ class AreasPage(QtWidgets.QWizardPage):
 
         start_at = self.field(Fields.START_AT).toPyDateTime()
         end_at = self.field(Fields.END_AT).toPyDateTime()
-        place_id: int = self.field(Fields.PLACE_ID)
+        location_id: int = self.field(Fields.PLACE_ID)
 
         with Session(ENGINE) as session:
-            self.place = session.get(Place, place_id)
-            for area in self.place.areas:
+            self.location = session.get(Location, location_id)
+            for area in self.location.areas:
                 item = QtWidgets.QListWidgetItem(area.name)
                 
                 is_busy = True
@@ -182,7 +182,7 @@ class AreasPage(QtWidgets.QWizardPage):
             for i in range(self.listWidget.count()) 
             if self.listWidget.item(i).checkState() == QtCore.Qt.CheckState.Checked
         )
-        ids = frozenset(area.id for area in self.place.areas if area.name in names)
+        ids = frozenset(area.id for area in self.location.areas if area.name in names)
         self.setField(Fields.AREA_IDS, ids)
 
         return super().validatePage()
@@ -222,9 +222,9 @@ class ReservationWizard(QtWidgets.QWizard):
         if self.currentPage() != self.resultsPage:
             return super().nextId()
 
-        place_id: int = self.field(Fields.PLACE_ID)
+        location_id: int = self.field(Fields.PLACE_ID)
         with Session(ENGINE) as session:
-            (ret, ), = session.query(exists().where(Area.place_id == place_id))
+            (ret, ), = session.query(exists().where(Area.location_id == location_id))
         
         if ret:
             return super().nextId()
@@ -236,8 +236,8 @@ class ReservationWizard(QtWidgets.QWizard):
             end_at=self.field(Fields.END_AT).toPyDateTime(),
             comment=self.field(Fields.COMMENT),
             event_id=self._event.id,
-            place_id=self.field(Fields.PLACE_ID),
+            location_id=self.field(Fields.PLACE_ID),
         )
         
-        if self.areasPage.place:
-            self.reservation.areas = list(area for area in self.areasPage.place.areas if area.id in self.field(Fields.AREA_IDS))
+        if self.areasPage.location:
+            self.reservation.areas = list(area for area in self.areasPage.location.areas if area.id in self.field(Fields.AREA_IDS))

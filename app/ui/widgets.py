@@ -2,12 +2,8 @@ from PyQt6 import uic
 
 
 class WidgetMixin:
-    """
-    Adds `windowTitle` in the current widget.
-    """
-
-    title = None
-    ui_path = None
+    title: str = None
+    ui_path: str = None
     
     def __init__(self) -> None:
         if self.ui_path:
@@ -20,8 +16,8 @@ class WidgetMixin:
 
         self.setup_ui()
         
-    def setup_ui(self):
+    def setup_ui(self) -> None:
         pass
     
-    def get_title(self):
+    def get_title(self) -> str:
         return self.title

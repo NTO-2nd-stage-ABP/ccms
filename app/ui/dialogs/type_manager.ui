@@ -30,7 +30,7 @@
    <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Виды мероприятий:</string>
+      <string>Объекты:</string>
      </property>
     </widget>
    </item>

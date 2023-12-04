@@ -192,13 +192,8 @@ class BaseTableModel(Generic[TModel], QAbstractTableModel):
         self, row: int, delete=True, parent: QModelIndex = QModelIndex()
     ) -> bool:
         self.beginRemoveRows(parent, row, row)
-        with Session(ENGINE) as session:
-            item = self._data[row]
-            self._data.remove(item)
-            if delete:
-                session.add(item)
-                session.delete(item)
-                session.commit()
+        item = self._data[row]
+        self._data.remove(item)
         self.endRemoveRows()
         return True
 
@@ -208,7 +203,7 @@ class EventTableModel(BaseTableModel[Event]):
         "Заголовок": lambda e: e.title,
         "Пространство": lambda e: SECTIONS[e.scope.value],
         "Разновидность": lambda e: e.type.name if e.type else None,
-        "Помещение": lambda e: str.join(", ", (r.place.name for r in e.reservations)) if any(e.reservations) else None,
+        "Помещение": lambda e: str.join(", ", (r.location.name for r in e.reservations)) if any(e.reservations) else None,
         "Дата начала": lambda e: e.start_at.strftime("%d.%m.%Y %H:%M"),
         "Дата создания": lambda e: e.created_at.strftime("%d.%m.%Y %H:%M"),
         "Описание": lambda e: e.description,
@@ -217,7 +212,7 @@ class EventTableModel(BaseTableModel[Event]):
 
 class AssignmentTableModel(BaseTableModel[Assignment]):
     GENERATORS = {
-        "Помещение": lambda a: a.place.name if a.place else None,
+        "Помещение": lambda a: a.location.name if a.location else None,
         "Разновидность": lambda a: a.type.name,
         "Мероприятие": lambda a: a.event.title if a.event else None,
         "Статус": lambda a: STATUSES[a.state.value],
@@ -242,7 +237,7 @@ class AssignmentTableModel(BaseTableModel[Assignment]):
 
 class ReservaionTableModel(BaseTableModel[Reservation]):
     GENERATORS = {
-        "Помещение": lambda r: r.place.name if r.place else None,
+        "Помещение": lambda r: r.location.name if r.location else None,
         "Зоны": lambda r: str.join(", ", (a.name for a in r.areas)) if any(r.areas) else None,
         "Мероприятие": lambda r: r.event.title if r.event else None,
         "Дата начала": lambda r: r.start_at.strftime("%d.%m.%Y %H:%M"),

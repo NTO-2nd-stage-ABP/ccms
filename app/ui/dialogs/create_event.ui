@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>496</width>
-    <height>502</height>
+    <width>400</width>
+    <height>450</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -45,7 +45,7 @@
         <item row="0" column="1">
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
-           <widget class="QLabel" name="placeLabel">
+           <widget class="QLabel" name="locationLabel">
             <property name="text">
              <string>Не выбрано</string>
             </property>
@@ -147,6 +147,12 @@
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
            <widget class="QDateTimeEdit" name="dateDateTimeEdit">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="calendarPopup">
              <bool>true</bool>
             </property>
