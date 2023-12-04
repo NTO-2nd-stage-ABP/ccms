@@ -160,7 +160,7 @@
      <item row="6" column="1">
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>В этом поле недоступны заброннированые мероприятиями помещения.</string>
+        <string>В этом поле недоступны занятые мероприятиями или другими секциями помещения.</string>
        </property>
        <property name="wordWrap">
         <bool>true</bool>
