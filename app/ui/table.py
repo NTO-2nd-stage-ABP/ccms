@@ -266,9 +266,9 @@ class EventTable(Table):
     table_model = EventTableModel
     create_dialog = EventCreateDialog
     update_dialog = EventUpdateDialog
-    # joins = (EventType,)
+    joins = (EventType,)
     filters = {
-        # "Вид:": (EventType.name, QComboBox),
+        "Вид:": (EventType.name, QComboBox),
         "Начало:": (Event.start_at, QDateTimeEdit),
         "Дата создания:": (Event.created_at, QDateTimeEdit),
     }
@@ -347,8 +347,13 @@ class EducationTable(Table):
     table_model = ClubTableModel
     create_dialog = ClubCreateDialog
     update_dialog = ClubUpdateDialog
-    
+    joins = (ClubType, Teacher)
+    filters = {
+        "Вид:": (ClubType.name, QComboBox),
+        "Преподаватель:": (Teacher.name, QComboBox),
+    }
+
     def setup_ui(self) -> None:
         super().setup_ui()
-        self.add_top_button("Виды секция", lambda: self.showTypeManagerDialog(ClubType), "app/ui/resourses/maximize.png")
+        self.add_top_button("Виды секций", lambda: self.showTypeManagerDialog(ClubType), "app/ui/resourses/maximize.png")
         self.add_top_button("Преподаватели", lambda: self.showTypeManagerDialog(Teacher), "app/ui/resourses/categorize.png")
