@@ -1,6 +1,6 @@
 from enum import Enum, auto
 from typing import Optional, List, Set
-from datetime import datetime
+from datetime import date, time, datetime
 
 from sqlmodel import SQLModel, Field, Relationship
 
@@ -22,7 +22,6 @@ class Scope(Enum):
     EDUCATION = auto()
 
 
-# флаги7
 class Weekday(Enum):
     MONDAY = auto()
     TUESDAY = auto()
@@ -32,6 +31,10 @@ class Weekday(Enum):
     SATURDAY = auto()
     SUNDAY = auto()
 
+    @classmethod
+    def from_date(cls, date: date):
+        return cls(date.isoweekday())
+
 
 class BaseModel(SQLModel):
     """A base model for database entities.
@@ -39,7 +42,6 @@ class BaseModel(SQLModel):
     Attributes:
         id (Optional[int]): The unique identifier for this object.
         created_at (datetime): The identity date and time for this object.
-        updated_at (datetime): The computed date and time for this object.
     """
 
     id: int = Field(primary_key=True)
@@ -84,6 +86,7 @@ class Location(UniqueNamedModel, table=True):
         events (List[Event]): The list of events associated with this location.
         assignments (List[Assignment]): The list of assignments associated with this location.
         reservations (List[Reservation]): The list of reservations associated with this location.
+        clubs (List[Club]): The list of clubs associated with this location.
     """
 
     areas: List["Area"] = Relationship(
@@ -96,7 +99,8 @@ class Location(UniqueNamedModel, table=True):
         back_populates="location",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
-    
+    clubs: List["Club"] = Relationship(back_populates="location")
+
     def __str__(self) -> str:
         return self.name
 
@@ -137,10 +141,10 @@ class Event(BaseModel, table=True):
     """Represents an event registered on a specific date.
 
     Attributes:
-        title (str): The title of the event.
-        description (Optional[str]): The description of the event.
-        start_at (datetime): The start date and time of the event.
-        scope (Scope): The scope of the event.
+        title (str): The title of this event.
+        description (Optional[str]): The description of this event.
+        start_at (datetime): The start date and time of this event.
+        scope (Scope): The scope of this event.
         type_id (Optional[int]): The unique identifier of the associated event type.
         type (Optional[EventType]): The event type associated with this event.
         location_id (Optional[int]): The unique identifier of the associated location.
@@ -248,34 +252,68 @@ class Reservation(BaseModel, table=True):
     )
 
 
-# class Teacher(UniqueNamedModel, table=True):
-#     pass
+class Teacher(UniqueNamedModel, table=True):
+    """A class representing a teacher.
+
+    Attributes:
+        clubs (List[Club]): The list of clubs associated with this teacher.
+    """
+
+    clubs: List["Club"] = Relationship(back_populates="teacher")
 
 
-# class ClubType(UniqueNamedModel, table=True):
-#     pass
+class ClubType(UniqueNamedModel, table=True):
+    """A class representing a club type.
+
+    Attributes:
+        clubs (List[Club]): The list of clubs associated with this club type.
+    """
+
+    clubs: List["Club"] = Relationship(back_populates="type")
 
 
-# class ClubDay(BaseModel, table=True):
-#     weekday: Weekday
-#     start_at: datetime
-#     end_at: datetime
-    
-#     club_id = Optional[int] = Field(default=None, foreign_key="Club.id")
-#     club = Optional["Club"] = Relationship(back_populates="days")
+class ClubDay(BaseModel, table=True):
+    """A class representing a club day in a schedule of a club.
+
+    Attributes:
+        weekday (Weekday): The weekday of this club day.
+        start_at (time): The start time of this club day.
+        end_at (time): The end time of this club day.
+        club_id (Optional[int]): The unique identifier of the associated club.
+        club (Optional[Club]): The club associated with this assignment.
+    """
+
+    weekday: Weekday
+    start_at: time
+    end_at: time
+
+    club_id: Optional[int] = Field(default=None, foreign_key="Club.id")
+    club: Optional["Club"] = Relationship(back_populates="days")
 
 
-# class Club(BaseModel, table=True):
-#     title: str = Field(max_length=256, index=True)
-#     start_at: datetime
-    
-#     days: List[ClubDay]
-    
-#     type_id: Optional[int] = Field(default=None, foreign_key="ClubType.id")
-#     type: Optional[ClubType] = Relationship(back_populates="clubs")
-    
-#     location_id: Optional[int] = Field(default=None, foreign_key="Location.id")
-#     location: Location = Relationship(back_populates="clubs")
-    
-#     teacher_id: Optional[int] = Field(default=None, foreign_key="Teacher.id")
-#     teacher: Teacher = Relationship(back_populates="clubs")
+class Club(BaseModel, table=True):
+    """Represents a club registered on a specific date.
+
+    Attributes:
+        title (str): The title of this club.
+        start_at (date): The start date of this club.
+        type_id (Optional[int]): The unique identifier of the associated club type.
+        type (Optional[EventType]): The club type associated with this club.
+        location_id (Optional[int]): The unique identifier of the associated location.
+        location (Optional[Location]): The associated location of this club.
+        days (List[ClubDay]): The list of days in the schedule of this club.
+    """
+
+    title: str = Field(max_length=256, index=True)
+    start_at: date
+
+    type_id: Optional[int] = Field(default=None, foreign_key="ClubType.id")
+    type: Optional[ClubType] = Relationship(back_populates="clubs")
+
+    teacher_id: Optional[int] = Field(default=None, foreign_key="Teacher.id")
+    teacher: Optional[Teacher] = Relationship(back_populates="clubs")
+
+    location_id: Optional[int] = Field(default=None, foreign_key="Location.id")
+    location: Optional[Location] = Relationship(back_populates="clubs")
+
+    days: List[ClubDay] = Relationship(back_populates="club")

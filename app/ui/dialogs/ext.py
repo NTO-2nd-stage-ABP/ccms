@@ -7,6 +7,7 @@ from app.db import ENGINE
 from app.db.models import (
     Area,
     BaseModel,
+    Club,
     EventType,
     Event,
     AssignmentType,
@@ -276,6 +277,15 @@ class AssignmentUpdateDialog(AssignmentCreateDialog):
             self.roomComboBox.setCurrentIndex(self.roomComboBox.findText(self.obj.location.name))
 
 
+class ClubCreateDialog(DialogView):
+    model = Club
+    ui_path = "app/ui/dialogs/create_club.ui"
+
+
+class ClubUpdateDialog(ClubCreateDialog):
+    title = "Редактирование секции"
+    
+
 __all__ = [
     "AreaManagerDialog",
     "TypeManagerDialog",
@@ -283,4 +293,6 @@ __all__ = [
     "EventUpdateDialog",
     "AssignmentCreateDialog",
     "AssignmentUpdateDialog",
+    "ClubCreateDialog",
+    "ClubUpdateDialog",
 ]

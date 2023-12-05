@@ -18,7 +18,7 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="icon">
@@ -50,6 +50,16 @@
        </attribute>
        <layout class="QGridLayout" name="eventsLayout"/>
       </widget>
+      <widget class="QWidget" name="tab_3">
+       <attribute name="icon">
+        <iconset>
+         <normaloff>resourses/education.png</normaloff>resourses/education.png</iconset>
+       </attribute>
+       <attribute name="title">
+        <string>Образование</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="educationLayout"/>
+      </widget>
       <widget class="QWidget" name="tab_2">
        <attribute name="icon">
         <iconset>
@@ -59,15 +69,6 @@
         <string>&amp;Локации</string>
        </attribute>
        <layout class="QVBoxLayout" name="locationsLayout"/>
-      </widget>
-      <widget class="QWidget" name="tab_3">
-       <attribute name="icon">
-        <iconset>
-         <normaloff>resourses/education.png</normaloff>resourses/education.png</iconset>
-       </attribute>
-       <attribute name="title">
-        <string>Образование</string>
-       </attribute>
       </widget>
      </widget>
     </item>

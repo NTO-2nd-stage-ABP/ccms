@@ -13,7 +13,7 @@ from sqlmodel import Session
 from sqlalchemy.orm.session import make_transient
 
 from app.db import ENGINE
-from app.db.models import BaseModel, Reservation, UniqueNamedModel, Event, Assignment
+from app.db.models import BaseModel, Club, Reservation, UniqueNamedModel, Event, Assignment
 
 TBaseNamedModel = TypeVar("TBaseNamedModel", bound=UniqueNamedModel)
 TModel = TypeVar("TModel", bound=BaseModel)
@@ -231,8 +231,8 @@ class AssignmentTableModel(BaseTableModel[Assignment]):
         if role != Qt.ItemDataRole.BackgroundRole:
             return super().data(index, role)
 
-        workRequest: Assignment = self._data[index.row()]
-        return self.STATUS_COLORS[workRequest.state]
+        assignment: Assignment = self._data[index.row()]
+        return self.STATUS_COLORS[assignment.state]
 
 
 class ReservaionTableModel(BaseTableModel[Reservation]):
@@ -247,9 +247,22 @@ class ReservaionTableModel(BaseTableModel[Reservation]):
     }
 
 
+class ClubTableModel(BaseTableModel[Club]):
+    GENERATORS = {
+        "Заголовок": lambda c: c.title,
+        "Помещение": lambda c: c.location.name,
+        "Преподаватель": lambda c: c.teacher.name,
+        "Вид": lambda c: c.type.name,
+        "Старт": lambda c: c.start_at.strftime("%d.%m.%Y %H:%M"),
+        "Расписание": lambda c: f"{len(c.days)} раз(а) в неделю",
+        "Дата создания": lambda c: c.created_at.strftime("%d.%m.%Y %H:%M"),
+    }
+
+
 __all__ = [
     "TypeListModel",
     "EventTableModel",
     "AssignmentTableModel",
     "ReservaionTableModel",
+    "ClubTableModel",
 ]

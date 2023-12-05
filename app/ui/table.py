@@ -9,7 +9,7 @@ from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtWidgets import QWidget, QDialog, QMessageBox, QFileDialog, QPushButton, QGroupBox, QLabel, QComboBox, QDateTimeEdit
 from app.ui.dialogs.alerts import confirm
-from app.ui.models import SECTIONS, EventTableModel, AssignmentTableModel, ReservaionTableModel
+from app.ui.models import SECTIONS, ClubTableModel, EventTableModel, AssignmentTableModel, ReservaionTableModel
 
 from app.ui.dialogs import (
     TypeManagerDialog,
@@ -17,19 +17,24 @@ from app.ui.dialogs import (
     EventUpdateDialog,
     AssignmentCreateDialog,
     AssignmentUpdateDialog,
-    AreaManagerDialog
+    AreaManagerDialog,
+    ClubCreateDialog,
+    ClubUpdateDialog
 )
 from app.db import ENGINE
 from app.ui.models import BaseTableModel
 from app.db.models import (
     Area,
+    Club,
+    ClubType,
     Event,
     Assignment,
     Location,
     Reservation,
     AssignmentType,
     BaseModel,
-    EventType
+    EventType,
+    Teacher
 )
 from app.ui.widgets import WidgetMixin
 
@@ -336,3 +341,14 @@ class ReservationTable(Table):
         AreaManagerDialog(self).exec()
         self.refresh()
         
+        
+class EducationTable(Table):
+    table = Club
+    table_model = ClubTableModel
+    create_dialog = ClubCreateDialog
+    update_dialog = ClubUpdateDialog
+    
+    def setup_ui(self) -> None:
+        super().setup_ui()
+        self.add_top_button("Виды секция", lambda: self.showTypeManagerDialog(ClubType), "app/ui/resourses/maximize.png")
+        self.add_top_button("Преподаватели", lambda: self.showTypeManagerDialog(Teacher), "app/ui/resourses/categorize.png")
