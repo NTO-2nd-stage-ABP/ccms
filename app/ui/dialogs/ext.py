@@ -8,6 +8,7 @@ from app.db.models import (
     Area,
     BaseModel,
     Club,
+    ClubType,
     EventType,
     Event,
     AssignmentType,
@@ -15,6 +16,7 @@ from app.db.models import (
     Reservation,
     Scope,
     Assignment,
+    Teacher,
 )
 from app.ui.widgets import WidgetMixin
 from app.ui.models import TypeListModel
@@ -277,13 +279,38 @@ class AssignmentUpdateDialog(AssignmentCreateDialog):
             self.roomComboBox.setCurrentIndex(self.roomComboBox.findText(self.obj.location.name))
 
 
+class ScheduleManagerDialog(DialogView):
+    ui_path = "app/ui/dialogs/schedule_manager.ui"
+
+
 class ClubCreateDialog(DialogView):
     model = Club
     ui_path = "app/ui/dialogs/create_club.ui"
+    
+    def setup_ui(self) -> None:
+        self.startDateEdit.setMinimumDate(QtCore.QDate.currentDate())
+        
+        with Session(ENGINE) as session:
+            type_names = session.exec(select(ClubType.name)).all()
+            location_names = session.exec(select(Location.name)).all()
+            teacher_names = session.exec(select(Teacher.name)).all()
+            
+        self.typeComboBox.addItems(type_names)
+        self.locationComboBox.addItems(location_names)
+        self.teacherComboBox.addItems(teacher_names)
+        
+        self.editScheduleButton.clicked.connect(self.openScheduleManager)
+
+    def openScheduleManager(self):
+        manager = ScheduleManagerDialog()
+        manager.exec()
 
 
 class ClubUpdateDialog(ClubCreateDialog):
     title = "Редактирование секции"
+    
+    def setup_ui(self) -> None:
+        return super().setup_ui()
     
 
 __all__ = [
