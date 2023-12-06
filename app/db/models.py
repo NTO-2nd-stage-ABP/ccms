@@ -272,6 +272,7 @@ class ClubType(UniqueNamedModel, table=True):
     clubs: List["Club"] = Relationship(back_populates="type")
 
 
+# TODO: Rename to "ScheduleDay"
 class ClubDay(BaseModel, table=True):
     """A class representing a club day in a schedule of a club.
 

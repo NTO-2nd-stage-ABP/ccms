@@ -1,4 +1,5 @@
-from typing import Dict
+from typing import Dict, Final
+from datetime import time
 from sqlmodel import Session, select
 
 from PyQt6 import QtGui, uic, QtWidgets, QtCore
@@ -8,6 +9,7 @@ from app.db.models import (
     Area,
     BaseModel,
     Club,
+    ClubDay,
     ClubType,
     EventType,
     Event,
@@ -17,6 +19,7 @@ from app.db.models import (
     Scope,
     Assignment,
     Teacher,
+    Weekday,
 )
 from app.ui.widgets import WidgetMixin
 from app.ui.models import TypeListModel
@@ -279,8 +282,82 @@ class AssignmentUpdateDialog(AssignmentCreateDialog):
             self.roomComboBox.setCurrentIndex(self.roomComboBox.findText(self.obj.location.name))
 
 
-class ScheduleManagerDialog(DialogView):
+WEEKDAY_NAMES = {
+   Weekday.MONDAY: "Понедельник",
+   Weekday.TUESDAY: "Вторник",
+   Weekday.WEDNESDAY: "Среда",
+   Weekday.THURSDAY: "Четверг",
+   Weekday.FRIDAY: "Пятница",
+   Weekday.SATURDAY: "Суббота",
+   Weekday.SUNDAY: "Воскресенье",
+}
+
+DEFAULT_START_AT_TIME = time(14)
+DEFAULT_END_AT_TIME = time(16)
+
+
+class ScheduleDayGroupBox(QtWidgets.QGroupBox):
+    def __init__(
+        self,
+        day: Weekday,
+        is_checked: bool = False,
+        default_start_at_time: time = DEFAULT_START_AT_TIME,
+        default_end_at_time: time = DEFAULT_END_AT_TIME,
+        parent: QtWidgets.QWidget | None = None
+    ) -> None:
+        super().__init__(WEEKDAY_NAMES[day], parent)
+        self.setLayout(QtWidgets.QHBoxLayout())
+        self.setCheckable(True)
+        self.setChecked(is_checked)
+        
+        self.weekday = day
+        
+        self.start_at_label = QtWidgets.QLabel("От", self)
+        self.start_at_time_edit = QtWidgets.QTimeEdit(QtCore.QTime(default_start_at_time), self)
+        
+        self.end_at_label = QtWidgets.QLabel("до", self)
+        self.end_at_time_edit = QtWidgets.QTimeEdit(QtCore.QTime(default_end_at_time), self)
+        self.spacer = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        
+        self.layout().addWidget(self.start_at_label)
+        self.layout().addWidget(self.start_at_time_edit)
+        self.layout().addWidget(self.end_at_label)
+        self.layout().addWidget(self.end_at_time_edit)
+        self.layout().addItem(self.spacer)
+
+
+class ScheduleManagerDialog(QtWidgets.QDialog, WidgetMixin):
     ui_path = "app/ui/dialogs/schedule_manager.ui"
+    
+    def __init__(self, club: Club | None = None, parent: QtWidgets.QWidget | None = None) -> None:
+        self.club: Club = club
+        self.days: list[ClubDay] = []
+        super().__init__(parent)
+    
+    def setup_ui(self) -> None:
+        self._boxes: list[ScheduleDayGroupBox] = []
+        
+        for day in Weekday:
+            if day in set(d.weekday for d in self.club.days):
+                club_day = next(cd for cd in self.club.days if cd.weekday == day)
+                box = ScheduleDayGroupBox(day, True, club_day.start_at, club_day.end_at)
+            else:
+                box = ScheduleDayGroupBox(day, parent=self)
+            self.gridLayout.addWidget(box)
+            self._boxes.append(box)
+            
+    def accept(self) -> None:
+        for box in set(box for box in self._boxes if (box.isChecked() and box.weekday not in set(d.weekday for d in self.days))):
+            self.days.append(ClubDay(
+                weekday=box.weekday,
+                start_at=box.start_at_time_edit.time().toPyTime(),
+                end_at=box.end_at_time_edit.time().toPyTime(),
+            ))
+
+        return super().accept()
+    
+    # def reject(self) -> None:
+    #     return super().reject()
 
 
 class ClubCreateDialog(DialogView):
@@ -288,6 +365,8 @@ class ClubCreateDialog(DialogView):
     ui_path = "app/ui/dialogs/create_club.ui"
     
     def setup_ui(self) -> None:
+        self.days = None
+        self.manager = ScheduleManagerDialog(self.obj, self)
         self.startDateEdit.setMinimumDate(QtCore.QDate.currentDate())
         
         with Session(ENGINE) as session:
@@ -302,15 +381,50 @@ class ClubCreateDialog(DialogView):
         self.editScheduleButton.clicked.connect(self.openScheduleManager)
 
     def openScheduleManager(self):
-        manager = ScheduleManagerDialog()
-        manager.exec()
+        if self.manager.exec():
+            self.scheduleTypeLabel.setText(str(len(self.manager.days)))
+            
+            
+    def accept(self) -> None:
+        if not self.titleLineEdit.text():
+            validationError(self, "Название не должно быть пустым!")
+            return
+        if not self.obj.days and not self.manager.days:
+            validationError(self, "Выберите хотя бы один день недели!")
+            return
+
+        with Session(ENGINE) as session:
+            club: Club = self.obj
+            if self.manager.days:
+                club.days = self.manager.days
+            club.title = self.titleLineEdit.text()
+            club.start_at = self.startDateEdit.date().toPyDate()
+            club.teacher_id = session.exec(select(Teacher.id).where(Teacher.name == self.teacherComboBox.currentText())).first()
+            club.location_id = session.exec(select(Location.id).where(Location.name == self.locationComboBox.currentText())).first()
+            club.type_id = session.exec(select(ClubType.id).where(ClubType.name == self.typeComboBox.currentText())).first()
+
+            session.add(club)
+            session.commit()
+
+        return super().accept()
 
 
 class ClubUpdateDialog(ClubCreateDialog):
     title = "Редактирование секции"
     
     def setup_ui(self) -> None:
-        return super().setup_ui()
+        super().setup_ui()
+        self.scheduleTypeLabel.setText(str(len(self.obj.days)))
+    
+        self.titleLineEdit.setText(self.obj.title)
+        self.startDateEdit.setDate(QtCore.QDate(self.obj.start_at))
+
+        if self.obj.type:
+            self.typeComboBox.setCurrentIndex(self.typeComboBox.findText(self.obj.type.name))
+        if self.obj.teacher:
+            self.teacherComboBox.setCurrentIndex(self.teacherComboBox.findText(self.obj.teacher.name))
+        if self.obj.location:
+            self.locationComboBox.setCurrentIndex(self.locationComboBox.findText(self.obj.location.name))
     
 
 __all__ = [
