@@ -156,7 +156,7 @@ class Table(QWidget, WidgetMixin):
                 statement = statement.where(self.filter)
             if self.joins is not None:
                 for join in self.joins:
-                    statement = statement.join(join)
+                    statement = statement.join(join, isouter=True)
             if self.wheres is not None:
                 for where in self.wheres:
                     statement = statement.where(where)
