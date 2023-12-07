@@ -272,9 +272,8 @@ class ClubType(UniqueNamedModel, table=True):
     clubs: List["Club"] = Relationship(back_populates="type")
 
 
-# TODO: Rename to "ScheduleDay"
-class ClubDay(BaseModel, table=True):
-    """A class representing a club day in a schedule of a club.
+class DaySchedule(BaseModel, table=True):
+    """A class representing a day schedule.
 
     Attributes:
         weekday (Weekday): The weekday of this club day.
@@ -317,4 +316,7 @@ class Club(BaseModel, table=True):
     location_id: Optional[int] = Field(default=None, foreign_key="Location.id")
     location: Optional[Location] = Relationship(back_populates="clubs")
 
-    days: List[ClubDay] = Relationship(back_populates="club")
+    days: List[DaySchedule] = Relationship(
+        back_populates="club",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )

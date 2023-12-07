@@ -9,7 +9,7 @@ from app.db.models import (
     Area,
     BaseModel,
     Club,
-    ClubDay,
+    DaySchedule,
     ClubType,
     EventType,
     Event,
@@ -296,7 +296,7 @@ DEFAULT_START_AT_TIME = time(14)
 DEFAULT_END_AT_TIME = time(16)
 
 
-class ScheduleDayGroupBox(QtWidgets.QGroupBox):
+class DayScheduleGroupBox(QtWidgets.QGroupBox):
     def __init__(
         self,
         day: Weekday,
@@ -329,47 +329,55 @@ class ScheduleDayGroupBox(QtWidgets.QGroupBox):
 COLUMN_COUNT = 2
 
 
-class ScheduleManagerDialog(QtWidgets.QDialog, WidgetMixin):
+class DaysScheduleManagerDialog(QtWidgets.QDialog, WidgetMixin):
     ui_path = "app/ui/dialogs/schedule_manager.ui"
     
-    def __init__(self, days: list[ClubDay] | None = None, parent: QtWidgets.QWidget | None = None) -> None:
-        self.days: list[ClubDay] = days or []
+    def __init__(self, days: list[DaySchedule] = [], parent: QtWidgets.QWidget | None = None) -> None:
+        self.days: list[DaySchedule] = days
         super().__init__(parent)
         
     @property
     def weekdays(self):
-        return set(schedule_day.weekday for schedule_day in self.days)
+        return frozenset(schedule_day.weekday for schedule_day in self.days)
+    
+    @property
+    def boxes(self) -> set[DayScheduleGroupBox]:
+        return frozenset(self.gridLayout.itemAt(i).widget() for i in range(self.gridLayout.count()))
     
     def setup_ui(self) -> None:
-        self._boxes: list[ScheduleDayGroupBox] = []
-        
+        weekday_days = {
+            sd.weekday: DayScheduleGroupBox(sd.weekday, True, sd.start_at, sd.end_at)
+            for sd in self.days
+        }
+
         for i, weekday in enumerate(Weekday):
-            if weekday in self.weekdays:
-                schedule_day = next(sd for sd in self.days if sd.weekday == weekday)
-                box = ScheduleDayGroupBox(weekday, True, schedule_day.start_at, schedule_day.end_at)
-            else:
-                box = ScheduleDayGroupBox(weekday, parent=self)
+            box = weekday_days.get(weekday, DayScheduleGroupBox(weekday))
 
             col = i % COLUMN_COUNT
             row = i // COLUMN_COUNT + i - col
             self.gridLayout.addWidget(box, row, col)
-
-            self._boxes.append(box)
             
     def accept(self) -> None:
-        self.days = []
+        for box in self.boxes:
+            day_schedule = next((day for day in self.days if day.weekday == box.weekday), DaySchedule())
+            if box.isChecked():
+                day_schedule.start_at = box.start_at_time_edit.time().toPyTime()
+                day_schedule.end_at = box.end_at_time_edit.time().toPyTime()
 
-        for box in filter(lambda box: box.isChecked(), self._boxes):
-            self.days.append(ClubDay(
-                weekday=box.weekday,
-                start_at=box.start_at_time_edit.time().toPyTime(),
-                end_at=box.end_at_time_edit.time().toPyTime(),
-            ))
+                if day_schedule.weekday:
+                    continue
+
+                day_schedule.weekday = box.weekday
+                self.days.append(day_schedule)
+            elif day_schedule.id:
+                self.days.remove(day_schedule)
+            elif day_schedule.weekday:
+                self.days = [day for day in self.days if day != day_schedule]
 
         return super().accept()
     
     def reject(self) -> None:
-        for box in self._boxes:
+        for box in self.boxes:
             box.setChecked(box.weekday in self.weekdays)
         return super().reject()
 
@@ -377,25 +385,18 @@ class ScheduleManagerDialog(QtWidgets.QDialog, WidgetMixin):
 class ClubCreateDialog(DialogView):
     model = Club
     ui_path = "app/ui/dialogs/create_club.ui"
-    
-    def setup_ui(self) -> None:
-        self.schedule_manager = ScheduleManagerDialog(self.obj.days, self)
-        self.startDateEdit.setMinimumDate(QtCore.QDate.currentDate())
-        
-        with Session(ENGINE) as session:
-            type_names = session.exec(select(ClubType.name)).all()
-            location_names = session.exec(select(Location.name)).all()
-            teacher_names = session.exec(select(Teacher.name)).all()
-            
-        self.typeComboBox.addItems(type_names)
-        self.locationComboBox.addItems(location_names)
-        self.teacherComboBox.addItems(teacher_names)
-        
-        self.editScheduleButton.clicked.connect(self.openScheduleManager)
 
-    def openScheduleManager(self):
-        if self.schedule_manager.exec():
-            self.scheduleTypeLabel.setText(str(len(self.schedule_manager.days)))
+    def setup_ui(self) -> None:
+        self.schedule_manager = DaysScheduleManagerDialog(self.obj.days, self)
+        self.schedule_manager.accepted.connect(self._update_schedule_type_label)
+        self.editScheduleButton.clicked.connect(self.schedule_manager.exec)
+
+        self.startDateEdit.setMinimumDate(QtCore.QDate.currentDate())
+
+        with Session(ENGINE) as session:
+            self.typeComboBox.addItems(session.exec(select(ClubType.name)).all())
+            self.locationComboBox.addItems(session.exec(select(Location.name)).all())
+            self.teacherComboBox.addItems(session.exec(select(Teacher.name)).all())
 
     def accept(self) -> None:
         if not self.titleLineEdit.text():
@@ -407,8 +408,6 @@ class ClubCreateDialog(DialogView):
 
         with Session(ENGINE) as session:
             club: Club = self.obj
-            if self.schedule_manager.days:
-                club.days = self.schedule_manager.days
             club.title = self.titleLineEdit.text()
             club.start_at = self.startDateEdit.date().toPyDate()
             club.teacher_id = session.exec(select(Teacher.id).where(Teacher.name == self.teacherComboBox.currentText())).first()
@@ -419,6 +418,9 @@ class ClubCreateDialog(DialogView):
             session.commit()
 
         return super().accept()
+
+    def _update_schedule_type_label(self):
+        self.scheduleTypeLabel.setText(str(len(self.schedule_manager.days)))
 
 
 class ClubUpdateDialog(ClubCreateDialog):

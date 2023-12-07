@@ -250,9 +250,9 @@ class ReservaionTableModel(BaseTableModel[Reservation]):
 class ClubTableModel(BaseTableModel[Club]):
     GENERATORS = {
         "Заголовок": lambda c: c.title,
-        "Помещение": lambda c: c.location.name,
-        "Преподаватель": lambda c: c.teacher.name,
-        "Вид": lambda c: c.type.name,
+        "Помещение": lambda c: c.location.name if c.location else None,
+        "Преподаватель": lambda c: c.teacher.name if c.teacher else None,
+        "Вид": lambda c: c.type.name if c.type else None,
         "Старт": lambda c: c.start_at.strftime("%d.%m.%Y %H:%M"),
         "Расписание": lambda c: f"{len(c.days)} раз(а) в неделю",
         "Дата создания": lambda c: c.created_at.strftime("%d.%m.%Y %H:%M"),
