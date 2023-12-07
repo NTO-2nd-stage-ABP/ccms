@@ -326,6 +326,9 @@ class ScheduleDayGroupBox(QtWidgets.QGroupBox):
         self.layout().addItem(self.spacer)
 
 
+COLUMN_COUNT = 2
+
+
 class ScheduleManagerDialog(QtWidgets.QDialog, WidgetMixin):
     ui_path = "app/ui/dialogs/schedule_manager.ui"
     
@@ -337,13 +340,17 @@ class ScheduleManagerDialog(QtWidgets.QDialog, WidgetMixin):
     def setup_ui(self) -> None:
         self._boxes: list[ScheduleDayGroupBox] = []
         
-        for day in Weekday:
+        for i, day in enumerate(Weekday):
             if day in set(d.weekday for d in self.club.days):
                 club_day = next(cd for cd in self.club.days if cd.weekday == day)
                 box = ScheduleDayGroupBox(day, True, club_day.start_at, club_day.end_at)
             else:
                 box = ScheduleDayGroupBox(day, parent=self)
-            self.gridLayout.addWidget(box)
+
+            col = i % COLUMN_COUNT
+            row = i // COLUMN_COUNT + i - col
+            self.gridLayout.addWidget(box, row, col)
+
             self._boxes.append(box)
             
     def accept(self) -> None:
