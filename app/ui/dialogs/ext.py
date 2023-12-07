@@ -332,20 +332,23 @@ COLUMN_COUNT = 2
 class ScheduleManagerDialog(QtWidgets.QDialog, WidgetMixin):
     ui_path = "app/ui/dialogs/schedule_manager.ui"
     
-    def __init__(self, club: Club | None = None, parent: QtWidgets.QWidget | None = None) -> None:
-        self.club: Club = club
-        self.days: list[ClubDay] = []
+    def __init__(self, days: list[ClubDay] | None = None, parent: QtWidgets.QWidget | None = None) -> None:
+        self.days: list[ClubDay] = days or []
         super().__init__(parent)
+        
+    @property
+    def weekdays(self):
+        return set(schedule_day.weekday for schedule_day in self.days)
     
     def setup_ui(self) -> None:
         self._boxes: list[ScheduleDayGroupBox] = []
         
-        for i, day in enumerate(Weekday):
-            if day in set(d.weekday for d in self.club.days):
-                club_day = next(cd for cd in self.club.days if cd.weekday == day)
-                box = ScheduleDayGroupBox(day, True, club_day.start_at, club_day.end_at)
+        for i, weekday in enumerate(Weekday):
+            if weekday in self.weekdays:
+                schedule_day = next(sd for sd in self.days if sd.weekday == weekday)
+                box = ScheduleDayGroupBox(weekday, True, schedule_day.start_at, schedule_day.end_at)
             else:
-                box = ScheduleDayGroupBox(day, parent=self)
+                box = ScheduleDayGroupBox(weekday, parent=self)
 
             col = i % COLUMN_COUNT
             row = i // COLUMN_COUNT + i - col
@@ -354,7 +357,9 @@ class ScheduleManagerDialog(QtWidgets.QDialog, WidgetMixin):
             self._boxes.append(box)
             
     def accept(self) -> None:
-        for box in set(box for box in self._boxes if (box.isChecked() and box.weekday not in set(d.weekday for d in self.days))):
+        self.days = []
+
+        for box in filter(lambda box: box.isChecked(), self._boxes):
             self.days.append(ClubDay(
                 weekday=box.weekday,
                 start_at=box.start_at_time_edit.time().toPyTime(),
@@ -363,8 +368,10 @@ class ScheduleManagerDialog(QtWidgets.QDialog, WidgetMixin):
 
         return super().accept()
     
-    # def reject(self) -> None:
-    #     return super().reject()
+    def reject(self) -> None:
+        for box in self._boxes:
+            box.setChecked(box.weekday in self.weekdays)
+        return super().reject()
 
 
 class ClubCreateDialog(DialogView):
@@ -372,8 +379,7 @@ class ClubCreateDialog(DialogView):
     ui_path = "app/ui/dialogs/create_club.ui"
     
     def setup_ui(self) -> None:
-        self.days = None
-        self.manager = ScheduleManagerDialog(self.obj, self)
+        self.schedule_manager = ScheduleManagerDialog(self.obj.days, self)
         self.startDateEdit.setMinimumDate(QtCore.QDate.currentDate())
         
         with Session(ENGINE) as session:
@@ -388,22 +394,21 @@ class ClubCreateDialog(DialogView):
         self.editScheduleButton.clicked.connect(self.openScheduleManager)
 
     def openScheduleManager(self):
-        if self.manager.exec():
-            self.scheduleTypeLabel.setText(str(len(self.manager.days)))
-            
-            
+        if self.schedule_manager.exec():
+            self.scheduleTypeLabel.setText(str(len(self.schedule_manager.days)))
+
     def accept(self) -> None:
         if not self.titleLineEdit.text():
             validationError(self, "Название не должно быть пустым!")
             return
-        if not self.obj.days and not self.manager.days:
+        if not self.obj.days and not self.schedule_manager.days:
             validationError(self, "Выберите хотя бы один день недели!")
             return
 
         with Session(ENGINE) as session:
             club: Club = self.obj
-            if self.manager.days:
-                club.days = self.manager.days
+            if self.schedule_manager.days:
+                club.days = self.schedule_manager.days
             club.title = self.titleLineEdit.text()
             club.start_at = self.startDateEdit.date().toPyDate()
             club.teacher_id = session.exec(select(Teacher.id).where(Teacher.name == self.teacherComboBox.currentText())).first()
