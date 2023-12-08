@@ -77,9 +77,12 @@ class ComboboxFilter(Filter):
         self.combobox.setEditable(True)
         self.combobox.lineEdit().clear()
         self.combobox.lineEdit().setPlaceholderText("Не выбрано")
+        self.combobox.lineEdit().setClearButtonEnabled(True)
         self.combobox.completer().setFilterMode(QtCore.Qt.MatchFlag.MatchContains)
-        self.combobox.completer().setCompletionMode(QtWidgets.QCompleter.CompletionMode.PopupCompletion)
-        self.combobox.setInsertPolicy(QtWidgets.QComboBox.InsertPolicy.NoInsert) 
+        self.combobox.completer().setCompletionMode(QtWidgets.QCompleter.CompletionMode.UnfilteredPopupCompletion)
+        self.combobox.view().setMinimumWidth(self.combobox.view().sizeHintForColumn(0))
+        self.combobox.setInsertPolicy(QtWidgets.QComboBox.InsertPolicy.NoInsert)
+        self.combobox.setSizeAdjustPolicy(QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
 
         form.addRow(QtWidgets.QLabel(self._label_text), self.combobox)
 
@@ -105,19 +108,22 @@ class EnumFilter(ComboboxFilter):
         return next(key for key, value in self.names.items() if value == text)
 
 
+MINIMUM_DATE_TIME = QtCore.QDateTime(2000, 1, 1, 0, 0)
+
 class DateTimeRangeFilter(Filter):
     def setup(self, form: QtWidgets.QFormLayout) -> None:
         form.addWidget(QtWidgets.QLabel(self._label_text))
 
         self.fr = QtWidgets.QDateTimeEdit()
         self.fr.setCalendarPopup(True)
-        self.fr.setDateTime(self.fr.minimumDateTime())
+        self.fr.setMinimumDateTime(MINIMUM_DATE_TIME)
         form.addRow(QtWidgets.QLabel("От:"), self.fr)
 
         self.to = QtWidgets.QDateTimeEdit()
         self.to.setCalendarPopup(True)
-        self.to.setDateTime(self.fr.minimumDateTime())
+        self.to.setMinimumDateTime(MINIMUM_DATE_TIME)
         form.addRow(QtWidgets.QLabel("До:"), self.to)
+        self.reset()
 
     def apply(self):
         fr_dt = self.fr.dateTime().toPyDateTime()
@@ -136,3 +142,6 @@ class DateTimeRangeFilter(Filter):
     def reset(self) -> None:
         self.fr.setDateTime(self.fr.minimumDateTime())
         self.to.setDateTime(self.to.minimumDateTime())
+
+        self.fr.setSpecialValueText("Не выбрано")
+        self.to.setSpecialValueText("Не выбрано")
