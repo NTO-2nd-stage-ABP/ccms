@@ -79,7 +79,7 @@ class ComboboxFilter(Filter):
         self.combobox.lineEdit().setPlaceholderText("Не выбрано")
         self.combobox.lineEdit().setClearButtonEnabled(True)
         self.combobox.completer().setFilterMode(QtCore.Qt.MatchFlag.MatchContains)
-        self.combobox.completer().setCompletionMode(QtWidgets.QCompleter.CompletionMode.UnfilteredPopupCompletion)
+        self.combobox.completer().setCompletionMode(QtWidgets.QCompleter.CompletionMode.PopupCompletion)
         self.combobox.view().setMinimumWidth(self.combobox.view().sizeHintForColumn(0))
         self.combobox.setInsertPolicy(QtWidgets.QComboBox.InsertPolicy.NoInsert)
         self.combobox.setSizeAdjustPolicy(QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
