@@ -18,7 +18,7 @@ class Fields(StrEnum):
 class WelcomePage(QtWidgets.QWizardPage):    
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
-        uic.loadUi("app/ui/wizards/welcome-page.ui", self)
+        uic.loadUi("app/ui/assets/wizards/welcome-page.ui", self)
         self.registerField(Fields.START_AT, self.startDateTimeEdit)
         self.registerField(Fields.END_AT, self.endDateTimeEdit)
 
@@ -39,7 +39,7 @@ class WelcomePage(QtWidgets.QWizardPage):
 class ResultsPage(QtWidgets.QWizardPage):
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
-        uic.loadUi("app/ui/wizards/results-page.ui", self)
+        uic.loadUi("app/ui/assets/wizards/results-page.ui", self)
         
         # self.registerField(Fields.PLACE_ID, self.listWidget)
         spin = QtWidgets.QSpinBox(self)
@@ -125,7 +125,7 @@ class ResultsPage(QtWidgets.QWizardPage):
 class AreasPage(QtWidgets.QWizardPage):
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
-        uic.loadUi("app/ui/wizards/areas-page.ui", self)
+        uic.loadUi("app/ui/assets/wizards/areas-page.ui", self)
         self.location = None
         lst = QtWidgets.QListWidget(self)
         lst.setVisible(False)
@@ -191,7 +191,7 @@ class AreasPage(QtWidgets.QWizardPage):
 class FinalPage(QtWidgets.QWizardPage):
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
-        uic.loadUi("app/ui/wizards/final-page.ui", self)
+        uic.loadUi("app/ui/assets/wizards/final-page.ui", self)
         self.registerField(Fields.COMMENT, self.commentTextEdit)
         
     def validatePage(self) -> bool:

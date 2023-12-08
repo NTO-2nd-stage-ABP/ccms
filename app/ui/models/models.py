@@ -10,17 +10,25 @@ from PyQt6.QtCore import (
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QMessageBox
 from sqlmodel import Session
-from sqlalchemy.orm.session import make_transient
 
 from app.db import ENGINE
-from app.db.models import BaseModel, Club, Reservation, UniqueNamedModel, Event, Assignment
+from app.db.models import BaseModel, Club, Reservation, Scope, UniqueNamedModel, Event, Assignment
 
 TBaseNamedModel = TypeVar("TBaseNamedModel", bound=UniqueNamedModel)
 TModel = TypeVar("TModel", bound=BaseModel)
 
-SECTIONS = {1: "Развлечение", 2: "Просвещение", 3: "Образование"}
+DATE_FORMAT = "%d.%m.%Y %H:%M"
 
-STATUSES = {1: "Черновик", 2: "Активно", 3: "Выполнено"}
+SCOPES = {
+    Scope.ENTERTAINMENT: "Развлечение",
+    Scope.ENLIGHTENMENT: "Просвещение",
+}
+
+STATES = {
+    Assignment.State.DRAFT: "Черновик",
+    Assignment.State.ACTIVE: "Активно",
+    Assignment.State.COMPLETED: "Выполнено"
+}
 
 
 class TypeListModel(Generic[TBaseNamedModel], QAbstractListModel):
@@ -168,29 +176,7 @@ class BaseTableModel(Generic[TModel], QAbstractTableModel):
                 session.add(item)
                 return list(self.GENERATORS.values())[index.column()](item)
 
-    # def insertRow(self, row: int, parent: QModelIndex = QModelIndex(), dlg=None) -> bool:
-    #     self.beginInsertRows(parent, row, row)
-
-    #     name = f"Объект ({self.rowCount()})"
-
-    #     # if self.isUniqueNameConstraintFailed(name):
-    #         # self._showUniqueNameConstraintWarning(name)
-    #         # return False
-
-    #     with Session(ENGINE) as session:
-    #         newObj: TBaseNamedModel = self._getGenericType()(name=name)
-    #         session.add(newObj)
-    #         session.commit()
-    #         session.refresh(newObj)
-
-    #     self._data.append(newObj)
-
-    #     self.endInsertRows()
-    #     return True
-
-    def removeRow(
-        self, row: int, delete=True, parent: QModelIndex = QModelIndex()
-    ) -> bool:
+    def removeRow(self, row: int, parent: QModelIndex = QModelIndex()) -> bool:
         self.beginRemoveRows(parent, row, row)
         item = self._data[row]
         self._data.remove(item)
@@ -201,11 +187,11 @@ class BaseTableModel(Generic[TModel], QAbstractTableModel):
 class EventTableModel(BaseTableModel[Event]):
     GENERATORS = {
         "Заголовок": lambda e: e.title,
-        "Пространство": lambda e: SECTIONS[e.scope.value],
+        "Пространство": lambda e: SCOPES[e.scope],
         "Разновидность": lambda e: e.type.name if e.type else None,
         "Помещение": lambda e: str.join(", ", (r.location.name for r in e.reservations)) if any(e.reservations) else None,
-        "Дата начала": lambda e: e.start_at.strftime("%d.%m.%Y %H:%M"),
-        "Дата создания": lambda e: e.created_at.strftime("%d.%m.%Y %H:%M"),
+        "Дата начала": lambda e: e.start_at.strftime(DATE_FORMAT),
+        "Дата создания": lambda e: e.created_at.strftime(DATE_FORMAT),
         "Описание": lambda e: e.description,
     }
 
@@ -215,9 +201,9 @@ class AssignmentTableModel(BaseTableModel[Assignment]):
         "Помещение": lambda a: a.location.name if a.location else None,
         "Разновидность": lambda a: a.type.name,
         "Мероприятие": lambda a: a.event.title if a.event else None,
-        "Статус": lambda a: STATUSES[a.state.value],
-        "Дедлайн": lambda a: a.deadline.strftime("%d.%m.%Y %H:%M"),
-        "Дата создания": lambda a: a.created_at.strftime("%d.%m.%Y %H:%M"),
+        "Статус": lambda a: STATES[a.state],
+        "Дедлайн": lambda a: a.deadline.strftime(DATE_FORMAT),
+        "Дата создания": lambda a: a.created_at.strftime(DATE_FORMAT),
         "Описание": lambda a: a.description,
     }
 
@@ -240,10 +226,10 @@ class ReservaionTableModel(BaseTableModel[Reservation]):
         "Помещение": lambda r: r.location.name if r.location else None,
         "Зоны": lambda r: str.join(", ", (a.name for a in r.areas)) if any(r.areas) else None,
         "Мероприятие": lambda r: r.event.title if r.event else None,
-        "Дата начала": lambda r: r.start_at.strftime("%d.%m.%Y %H:%M"),
-        "Дата конца": lambda r: r.end_at.strftime("%d.%m.%Y %H:%M"),
+        "Дата начала": lambda r: r.start_at.strftime(DATE_FORMAT),
+        "Дата конца": lambda r: r.end_at.strftime(DATE_FORMAT),
         "Комментарий": lambda r: r.comment,
-        "Дата создания": lambda r: r.created_at.strftime("%d.%m.%Y %H:%M"),
+        "Дата создания": lambda r: r.created_at.strftime(DATE_FORMAT),
     }
 
 
@@ -253,13 +239,14 @@ class ClubTableModel(BaseTableModel[Club]):
         "Помещение": lambda c: c.location.name if c.location else None,
         "Преподаватель": lambda c: c.teacher.name if c.teacher else None,
         "Вид": lambda c: c.type.name if c.type else None,
-        "Старт": lambda c: c.start_at.strftime("%d.%m.%Y %H:%M"),
+        "Старт": lambda c: c.start_at.strftime(DATE_FORMAT),
         "Расписание": lambda c: f"{len(c.days)} раз(а) в неделю",
-        "Дата создания": lambda c: c.created_at.strftime("%d.%m.%Y %H:%M"),
+        "Дата создания": lambda c: c.created_at.strftime(DATE_FORMAT),
     }
 
 
 __all__ = [
+    "BaseTableModel",
     "TypeListModel",
     "EventTableModel",
     "AssignmentTableModel",

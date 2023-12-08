@@ -1,8 +1,8 @@
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtWidgets import QMainWindow
 
-from app.ui.table import AssignmentTable, EducationTable, EventTable, ReservationTable, DesktopTable
-from app.ui.widgets import WidgetMixin
+from app.ui.widgets.tables.tables import AssignmentTable, EducationTable, EventTable, ReservationTable, DesktopTable
+from app.ui.widgets.mixins import WidgetMixin
 
 
 class MainWindow(QMainWindow, WidgetMixin):
@@ -10,7 +10,7 @@ class MainWindow(QMainWindow, WidgetMixin):
     Represents the Main-Window of this application.
     """
     
-    ui_path = "app/ui/main_window.ui"
+    ui_path = "app/ui/assets/windows/main-window.ui"
 
     def setup_ui(self) -> None:
         self.events = EventTable(self)

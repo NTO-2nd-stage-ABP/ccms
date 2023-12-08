@@ -51,7 +51,7 @@
        </property>
        <property name="icon">
         <iconset>
-         <normaloff>../../../first-part/app/ui/resourses/create.png</normaloff>../../../first-part/app/ui/resourses/create.png</iconset>
+         <normaloff>../resourses/create.png</normaloff>../resourses/create.png</iconset>
        </property>
        <property name="shortcut">
         <string>Ctrl+N</string>
@@ -79,7 +79,7 @@
            </property>
            <property name="icon">
             <iconset>
-             <normaloff>../../../first-part/app/ui/resourses/edit.png</normaloff>../../../first-part/app/ui/resourses/edit.png</iconset>
+             <normaloff>../resourses/edit.png</normaloff>../resourses/edit.png</iconset>
            </property>
            <property name="shortcut">
             <string>F2</string>
@@ -99,7 +99,7 @@
            </property>
            <property name="icon">
             <iconset>
-             <normaloff>../../../first-part/app/ui/resourses/delete.png</normaloff>../../../first-part/app/ui/resourses/delete.png</iconset>
+             <normaloff>../resourses/delete.png</normaloff>../resourses/delete.png</iconset>
            </property>
            <property name="shortcut">
             <string>Del</string>
@@ -116,7 +116,7 @@
            </property>
            <property name="icon">
             <iconset>
-             <normaloff>resourses/save.png</normaloff>resourses/save.png</iconset>
+             <normaloff>../resourses/save.png</normaloff>../resourses/save.png</iconset>
            </property>
            <property name="shortcut">
             <string>Ctrl+E</string>
@@ -133,7 +133,7 @@
            </property>
            <property name="icon">
             <iconset>
-             <normaloff>../../../first-part/app/ui/resourses/refresh.png</normaloff>../../../first-part/app/ui/resourses/refresh.png</iconset>
+             <normaloff>../resourses/refresh.png</normaloff>../resourses/refresh.png</iconset>
            </property>
            <property name="shortcut">
             <string>F5</string>

@@ -18,12 +18,12 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="icon">
         <iconset>
-         <normaloff>resourses/desktop.png</normaloff>resourses/desktop.png</iconset>
+         <normaloff>../../resourses/desktop.png</normaloff>../../resourses/desktop.png</iconset>
        </attribute>
        <attribute name="title">
         <string>&amp;Рабочий стол</string>
@@ -33,7 +33,7 @@
       <widget class="QWidget" name="assignmentsTab">
        <attribute name="icon">
         <iconset>
-         <normaloff>resourses/work.png</normaloff>resourses/work.png</iconset>
+         <normaloff>../../resourses/work.png</normaloff>../../resourses/work.png</iconset>
        </attribute>
        <attribute name="title">
         <string>&amp;Заявки</string>
@@ -43,7 +43,7 @@
       <widget class="QWidget" name="eventsTab">
        <attribute name="icon">
         <iconset>
-         <normaloff>resourses/event.png</normaloff>resourses/event.png</iconset>
+         <normaloff>../../resourses/event.png</normaloff>../../resourses/event.png</iconset>
        </attribute>
        <attribute name="title">
         <string>&amp;Мероприятия</string>
@@ -53,7 +53,7 @@
       <widget class="QWidget" name="tab_3">
        <attribute name="icon">
         <iconset>
-         <normaloff>resourses/education.png</normaloff>resourses/education.png</iconset>
+         <normaloff>../../resourses/education.png</normaloff>../../resourses/education.png</iconset>
        </attribute>
        <attribute name="title">
         <string>Образование</string>
@@ -63,7 +63,7 @@
       <widget class="QWidget" name="tab_2">
        <attribute name="icon">
         <iconset>
-         <normaloff>resourses/location.png</normaloff>resourses/location.png</iconset>
+         <normaloff>../../resourses/location.png</normaloff>../../resourses/location.png</iconset>
        </attribute>
        <attribute name="title">
         <string>&amp;Локации</string>
