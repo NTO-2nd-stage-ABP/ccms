@@ -25,7 +25,7 @@ class EventTable(Table):
     
     def setup_ui(self) -> None:
         super().setup_ui()
-        self.add_top_button("Разновидности", lambda: self.showTypeManagerDialog(EventType), "app/ui/resourses/maximize.png")
+        self.add_top_button("Виды мероприятий", lambda: self.showTypeManagerDialog(EventType), "app/ui/resourses/maximize.png")
 
 
 class AssignmentTable(Table):
@@ -43,7 +43,7 @@ class AssignmentTable(Table):
     
     def setup_ui(self) -> None:
         super().setup_ui()
-        self.add_top_button("Разновидности", lambda: self.showTypeManagerDialog(AssignmentType), "app/ui/resourses/maximize.png")
+        self.add_top_button("Виды заявок", lambda: self.showTypeManagerDialog(AssignmentType), "app/ui/resourses/maximize.png")
 
 
 class DesktopTable(AssignmentTable):
@@ -92,7 +92,7 @@ class ReservationTable(Table):
     
     def setup_ui(self) -> None:
         super().setup_ui()
-        self.add_top_button("Разновидности", lambda: self.showTypeManagerDialog(Location), "app/ui/resourses/maximize.png")
+        self.add_top_button("Помещения", lambda: self.showTypeManagerDialog(Location), "app/ui/resourses/maximize.png")
         self.add_top_button("Зоны", self.showAreasManager, "app/ui/resourses/categorize.png")
 
     def showAreasManager(self):
