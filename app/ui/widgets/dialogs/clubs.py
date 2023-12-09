@@ -40,6 +40,7 @@ class ClubCreateDialog(DialogView):
 
         with Session(ENGINE) as session:
             club: Club = self.obj
+            club.days = self.schedule_manager.days
             club.title = self.titleLineEdit.text()
             club.start_at = self.startDateEdit.date().toPyDate()
             club.teacher_id = session.exec(select(Teacher.id).where(Teacher.name == self.teacherComboBox.currentText())).first()
