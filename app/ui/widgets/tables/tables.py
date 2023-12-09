@@ -8,7 +8,7 @@ from app.db import ENGINE
 from app.db.models import *
 from app.ui.widgets.tables.base import *
 from app.ui.widgets.tables.filters import *
-from app.ui.widgets.tables.filters import EnumFilter
+from app.ui.widgets.tables.filters import TextFilter, EnumFilter
 
 
 class EventTable(Table):
@@ -17,15 +17,13 @@ class EventTable(Table):
     create_dialog = EventCreateDialog
     update_dialog = EventUpdateDialog
     filters = (
-        ComboboxFilter("Вид:", EventType.name),
+        TextFilter("Заголовок:", Event.title),
+        TextFilter("Описание:", Event.description),
+        ComboboxFilter("Вид:", EventType.name, True),
         EnumFilter("Пространтсво:", Event.scope, SCOPES),
-        DateTimeRangeFilter("Начало:", Event.start_at),
-        DateTimeRangeFilter("Дата создания:", Event.created_at),
+        DateTimeRangeFilter("Начало:", Event.start_at, True),
+        DateTimeRangeFilter("Дата создания:", Event.created_at, True),
     )
-    
-    def setup_ui(self) -> None:
-        super().setup_ui()
-        self.add_top_button("Виды мероприятий", lambda: self.showTypeManagerDialog(EventType), "app/ui/resourses/maximize.png")
 
 
 class AssignmentTable(Table):
@@ -34,16 +32,12 @@ class AssignmentTable(Table):
     create_dialog = AssignmentCreateDialog
     update_dialog = AssignmentUpdateDialog
     filters = (
-        ComboboxFilter("Вид:", AssignmentType.name),
+        ComboboxFilter("Вид:", AssignmentType.name, True),
         ComboboxFilter("Локация:", Location.name),
         EnumFilter("Статус:", Assignment.state, STATES),
-        DateTimeRangeFilter("Дедлайн:", Assignment.deadline),
-        DateTimeRangeFilter("Дата создания:", Assignment.created_at),
+        DateTimeRangeFilter("Дедлайн:", Assignment.deadline, True),
+        DateTimeRangeFilter("Дата создания:", Assignment.created_at, True),
     )
-    
-    def setup_ui(self) -> None:
-        super().setup_ui()
-        self.add_top_button("Виды заявок", lambda: self.showTypeManagerDialog(AssignmentType), "app/ui/resourses/maximize.png")
 
 
 class DesktopTable(AssignmentTable):
@@ -53,8 +47,8 @@ class DesktopTable(AssignmentTable):
     filters = (
         ComboboxFilter("Вид:", AssignmentType.name),
         ComboboxFilter("Локация:", Location.name),
-        DateTimeRangeFilter("Дедлайн:", Assignment.deadline),
-        DateTimeRangeFilter("Дата создания:", Assignment.created_at),
+        DateTimeRangeFilter("Дедлайн:", Assignment.deadline, True),
+        DateTimeRangeFilter("Дата создания:", Assignment.created_at, True),
     )
     
     @property
@@ -84,15 +78,15 @@ class ReservationTable(Table):
     table = Reservation
     table_model = ReservaionTableModel
     filters = (
-        ComboboxFilter("Локация:", Location.name),
-        DateTimeRangeFilter("Начало:", Reservation.start_at),
-        DateTimeRangeFilter("Конец:", Reservation.end_at),
-        DateTimeRangeFilter("Дата создания:", Reservation.created_at),
+        TextFilter("Комментарий:", Reservation.comment),
+        ComboboxFilter("Локация:", Location.name, True),
+        DateTimeRangeFilter("Начало:", Reservation.start_at, True),
+        DateTimeRangeFilter("Конец:", Reservation.end_at, True),
+        DateTimeRangeFilter("Дата создания:", Reservation.created_at, True),
     )
     
     def setup_ui(self) -> None:
         super().setup_ui()
-        self.add_top_button("Помещения", lambda: self.showTypeManagerDialog(Location), "app/ui/resourses/maximize.png")
         self.add_top_button("Зоны", self.showAreasManager, "app/ui/resourses/categorize.png")
 
     def showAreasManager(self):
@@ -106,11 +100,8 @@ class EducationTable(Table):
     create_dialog = ClubCreateDialog
     update_dialog = ClubUpdateDialog
     filters = (
-        ComboboxFilter("Вид:", ClubType.name),
-        ComboboxFilter("Преподаватель:", Teacher.name),
+        ComboboxFilter("Вид:", ClubType.name, True),
+        ComboboxFilter("Преподаватель:", Teacher.name, True),
+        DateTimeRangeFilter("Старт:", Club.start_at, True),
+        DateTimeRangeFilter("Дата создания:", Club.created_at, True),
     )
-
-    def setup_ui(self) -> None:
-        super().setup_ui()
-        self.add_top_button("Виды секций", lambda: self.showTypeManagerDialog(ClubType), "app/ui/resourses/maximize.png")
-        self.add_top_button("Преподаватели", lambda: self.showTypeManagerDialog(Teacher), "app/ui/resourses/categorize.png")

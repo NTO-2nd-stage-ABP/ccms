@@ -3,25 +3,21 @@ from functools import reduce
 
 from os.path import expanduser
 
-import typing
-from sqlmodel import Session, Column, select, delete
-from sqlalchemy.orm import class_mapper
+from sqlmodel import Session, select, delete
 from sqlmodel.sql.expression import SelectOfScalar
 
+from PyQt6 import QtWidgets, QtGui
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtWidgets import QWidget, QDialog, QMessageBox, QFileDialog, QPushButton
 from app.ui.widgets.alerts import confirm
 
-from app.ui.widgets.dialogs import TypeManagerDialog
 from app.db import ENGINE
 from app.ui.models import BaseTableModel
 from app.db.models import BaseModel
 from app.ui.widgets.mixins import WidgetMixin
 from app.ui.widgets.tables.filters import Filter, FilterBox
 
-# _T = typing.TypeVar("_T", BaseModel)
-# typing.Generic(_T), 
 
 class Table(QWidget, WidgetMixin):
     ui_path = "app/ui/assets/table.ui"
@@ -53,9 +49,13 @@ class Table(QWidget, WidgetMixin):
     def __init__(self, parent: QWidget | None = None) -> None:
         self._extra_buttons = []
         super().__init__(parent)
-        self._filter_box = FilterBox(self.filters, self) if self.filters else None
         
     def setup_ui(self) -> None:
+        self.tableView = QtWidgets.QTableView()
+        self.tableView.setSelectionBehavior(QtWidgets.QTableView.SelectionBehavior.SelectRows)
+        self.tableView.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)
+        self.tableView.verticalHeader().setVisible(False)
+        
         if self.create_dialog:
             self.createButton.clicked.connect(self.create)
         else:
@@ -73,6 +73,23 @@ class Table(QWidget, WidgetMixin):
         
         self.exportButton.clicked.connect(self.export)
         self.refreshButton.clicked.connect(self.refresh)
+        
+        self._filter_box = FilterBox(self.filters, self, self) if self.filters else None
+        self.splitter = QtWidgets.QSplitter(Qt.Orientation.Horizontal)
+        self.splitter.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.splitter.addWidget(self.tableView)
+        self.splitter.addWidget(self._filter_box)
+        self.splitter.setStretchFactor(0, 5)
+        self.verticalLayout.addWidget(self.splitter)
+        
+        self._filter_box.hide()
+        hideFilterBtn = QtWidgets.QToolButton()
+        hideFilterBtn.setIcon(QIcon("app/ui/resourses/filter.png"))
+        self.toolbarLayout.addWidget(hideFilterBtn)
+        shortcut = "Ctrl+B"
+        hideFilterBtn.setToolTip(f"Отобразить панель с фитрами ({shortcut})")
+        hideFilterBtn.setShortcut(QtGui.QKeySequence(shortcut))
+        hideFilterBtn.clicked.connect(lambda: self._filter_box.setHidden(not(self._filter_box.isHidden())))
 
     def _add_button(self, layout, index, text: str, slot, icon=None) -> None:
         button = QPushButton(QIcon(icon), text, self)
@@ -141,10 +158,8 @@ class Table(QWidget, WidgetMixin):
             self.on_selection_changed
         )
         
-        if filter and self._filter_box:
-            self.horizontalLayout_2.removeWidget(self._filter_box)
-            self._filter_box = FilterBox(self.filters, self)
-            self.horizontalLayout_2.addWidget(self._filter_box)
+        if filter:
+            self._filter_box.refresh()
 
         self.on_selection_changed()
         self.update_total_count()
@@ -162,11 +177,7 @@ class Table(QWidget, WidgetMixin):
 
     def update_total_count(self):
         self.totalRowsCountLabel.setText(str(self.model.rowCount()))
-    
-    def showTypeManagerDialog(self,  _type):
-        TypeManagerDialog(_type, self).exec()
-        self.refresh()
-        
+
     def add_top_button(self, text: str, slot, icon=None) -> None:
         self._add_button(self.horizontalLayout, 2, text, slot, icon)
 

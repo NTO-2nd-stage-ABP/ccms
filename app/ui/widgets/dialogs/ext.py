@@ -14,7 +14,7 @@ from app.ui.widgets.mixins import WidgetMixin
         
 
 class TypeManagerDialog(QtWidgets.QDialog):
-    def __init__(self, _type, parent) -> None:
+    def __init__(self, _type, parent = None) -> None:
         super().__init__(parent)
         uic.loadUi("app/ui/assets/dialogs/type-manager.ui", self)
 
@@ -44,7 +44,7 @@ class TypeManagerDialog(QtWidgets.QDialog):
 
 
 class AreaManagerDialog(TypeManagerDialog):
-    def __init__(self, parent) -> None:
+    def __init__(self, parent = None) -> None:
         super().__init__(Area, parent)
         self.combobox = QtWidgets.QComboBox()
         self.combobox.currentTextChanged.connect(self.updateModel)
