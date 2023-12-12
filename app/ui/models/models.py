@@ -12,7 +12,8 @@ from PyQt6.QtWidgets import QMessageBox
 from sqlmodel import Session
 
 from app.db import ENGINE
-from app.db.models import BaseModel, Club, Reservation, Scope, UniqueNamedModel, Event, Assignment
+from app.db.models import BaseModel, Club, Reservation, Scope, UniqueNamedModel, Event, Assignment, Weekday
+from app.ui.widgets.schedule import WEEKDAY_NAMES
 
 TBaseNamedModel = TypeVar("TBaseNamedModel", bound=UniqueNamedModel)
 TModel = TypeVar("TModel", bound=BaseModel)
@@ -182,6 +183,39 @@ class BaseTableModel(Generic[TModel], QAbstractTableModel):
         self._data.remove(item)
         self.endRemoveRows()
         return True
+
+
+class ScheduleTableModel(QAbstractTableModel):
+    DATE_FMT = "%H:%M"
+
+    def __init__(self, data: list[Club], parent: QObject | None = None) -> None:
+        super().__init__(parent)
+        self._data = data
+        
+    def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
+        return len(self._data)
+    
+    def columnCount(self, parent: QModelIndex = QModelIndex()) -> int:
+        return len(WEEKDAY_NAMES)
+    
+    def headerData(self, section: int, orientation: Qt.Orientation, role: int = ...) -> Any:
+        if role != Qt.ItemDataRole.DisplayRole:
+            return super().headerData(section, orientation, role)
+
+        if orientation == Qt.Orientation.Vertical:
+            return self._data[section].title
+        return list(WEEKDAY_NAMES.values())[section]
+    
+    def data(self, index: QModelIndex, role: int = ...) -> Any:
+        if role != Qt.ItemDataRole.DisplayRole:
+            return
+        weekday = Weekday(index.column() + 1)
+        with Session(ENGINE) as session:
+            club: Club = session.get(Club, self._data[index.row()].id)  # type: ignore
+            schedule_day = next((d for d in club.days if d.weekday == weekday), None)
+            if not schedule_day:
+                return
+            return f"{schedule_day.start_at.strftime(self.DATE_FMT)} - {schedule_day.end_at.strftime(self.DATE_FMT)} - {club.location.name if club.location else None} - {club.teacher.name if club.teacher else None}" 
 
 
 class EventTableModel(BaseTableModel[Event]):

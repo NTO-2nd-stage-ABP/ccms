@@ -1,5 +1,10 @@
 from PyQt6.QtCore import pyqtSlot
-from PyQt6.QtWidgets import QMainWindow
+from PyQt6.QtWidgets import QMainWindow, QTableView, QHeaderView
+from sqlmodel import Session, select
+from app.db import ENGINE
+from app.db.models import Club
+from app.ui.models.models import ScheduleTableModel
+from app.ui.utils import export
 
 from app.ui.widgets.tables.tables import AssignmentTable, EducationTable, EventTable, ReservationTable, DesktopTable
 from app.ui.widgets.mixins import WidgetMixin
@@ -26,11 +31,23 @@ class MainWindow(QMainWindow, WidgetMixin):
             self.clubs,
             self.reservations,
         ]
+        
+        with Session(ENGINE) as session:
+            data = session.exec(select(Club)).all()
+        
+        self.schedule = QTableView(self)
+        self.model = ScheduleTableModel(data)
+        self.schedule.setModel(self.model)
+        self.schedule.setWordWrap(True)
+        self.schedule.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.schedule.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        self.pushButton.clicked.connect(lambda: export(self.model, self, True))
 
         self.desktopLayout.addWidget(self.desktop)
         self.assignmentsLayout.addWidget(self.assignments)
         self.eventsLayout.addWidget(self.events)
-        self.educationLayout.addWidget(self.clubs)
+        self.verticalLayout.addWidget(self.clubs)
+        self.verticalLayout_2.addWidget(self.schedule)
         self.locationsLayout.addWidget(self.reservations)
 
         self.tabWidget.currentChanged.connect(self.refresh_current_tab)

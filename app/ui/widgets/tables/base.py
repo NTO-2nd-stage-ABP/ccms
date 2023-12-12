@@ -10,6 +10,7 @@ from PyQt6 import QtWidgets, QtGui
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtWidgets import QWidget, QDialog, QMessageBox, QFileDialog, QPushButton
+from app.ui.utils import export
 from app.ui.widgets.alerts import confirm
 
 from app.db import ENGINE
@@ -125,30 +126,31 @@ class Table(QWidget, WidgetMixin):
 
     @pyqtSlot()
     def export(self):
-        PATH, EXTENSION = QFileDialog.getSaveFileName(
-            self, "Укажите путь", expanduser("~"), "*.csv"
-        )
-        if not EXTENSION:
-            return
+        export(self.model, self)
+        # PATH, EXTENSION = QFileDialog.getSaveFileName(
+        #     self, "Укажите путь", expanduser("~"), "*.csv"
+        # )
+        # if not EXTENSION:
+        #     return
 
-        headers = []
+        # headers = []
 
-        for col in range(self.model.columnCount()):
-            headers.append(self.model.headerData(col, Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole))
+        # for col in range(self.model.columnCount()):
+        #     headers.append(self.model.headerData(col, Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole))
 
-        with open(PATH, "w", encoding="UTF-8", newline="") as file:
-            writer = csv.writer(file)
-            writer.writerow(headers)
-            for rowNumber in range(self.model.rowCount()):
-                fields = [
-                    self.model.data(
-                        self.model.index(rowNumber, columnNumber), Qt.ItemDataRole.DisplayRole
-                    )
-                    for columnNumber in range(self.model.columnCount())
-                ]
-                writer.writerow(fields)
+        # with open(PATH, "w", encoding="UTF-8", newline="") as file:
+        #     writer = csv.writer(file)
+        #     writer.writerow(headers)
+        #     for rowNumber in range(self.model.rowCount()):
+        #         fields = [
+        #             self.model.data(
+        #                 self.model.index(rowNumber, columnNumber), Qt.ItemDataRole.DisplayRole
+        #             )
+        #             for columnNumber in range(self.model.columnCount())
+        #         ]
+        #         writer.writerow(fields)
 
-        QMessageBox.information(self, "Экспорт завершён", f"Файл был успешно сохранён в '{PATH}'.")
+        # QMessageBox.information(self, "Экспорт завершён", f"Файл был успешно сохранён в '{PATH}'.")
 
     @pyqtSlot()
     def refresh(self, filter=True):
