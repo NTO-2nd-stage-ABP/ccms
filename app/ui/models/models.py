@@ -189,8 +189,8 @@ class ScheduleTableModel(QAbstractTableModel):
     DATE_FMT = "%H:%M"
 
     def __init__(self, data: list[Club], parent: QObject | None = None) -> None:
-        super().__init__(parent)
         self._data = data
+        super().__init__(parent)
         
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
         return len(self._data)
@@ -211,7 +211,7 @@ class ScheduleTableModel(QAbstractTableModel):
             return
         weekday = Weekday(index.column() + 1)
         with Session(ENGINE) as session:
-            club: Club = session.get(Club, self._data[index.row()].id)  # type: ignore
+            club: Club | None = session.get(Club, self._data[index.row()].id)
             schedule_day = next((d for d in club.days if d.weekday == weekday), None)
             if not schedule_day:
                 return

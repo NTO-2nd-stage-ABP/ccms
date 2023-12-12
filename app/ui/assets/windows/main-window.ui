@@ -84,7 +84,7 @@
                 </property>
                 <property name="icon">
                  <iconset>
-                  <normaloff>../../resourses/refresh.png</normaloff>../../resourses/refresh.png</iconset>
+                  <normaloff>../../resourses/save.png</normaloff>../../resourses/save.png</iconset>
                 </property>
                </widget>
               </item>

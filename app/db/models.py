@@ -318,5 +318,5 @@ class Club(BaseModel, table=True):
 
     days: List[DaySchedule] = Relationship(
         back_populates="club",
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+        sa_relationship_kwargs={"cascade": "all, delete, delete-orphan"},
     )

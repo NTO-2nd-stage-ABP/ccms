@@ -118,8 +118,9 @@ class Table(QWidget, WidgetMixin):
             for i, j in enumerate(self.selected_indexes):
                 index = j - i
                 ids.append(self.model._data[index].id)
+                session.delete(self.model._data[index])
                 self.model.removeRow(index)
-            session.exec(delete(self.table).where(self.table.id.in_(ids)))
+            # session.exec(delete(self.table).where(self.table.id.in_(ids)))
             session.commit()
 
         self.update_total_count()
@@ -127,30 +128,6 @@ class Table(QWidget, WidgetMixin):
     @pyqtSlot()
     def export(self):
         export(self.model, self)
-        # PATH, EXTENSION = QFileDialog.getSaveFileName(
-        #     self, "Укажите путь", expanduser("~"), "*.csv"
-        # )
-        # if not EXTENSION:
-        #     return
-
-        # headers = []
-
-        # for col in range(self.model.columnCount()):
-        #     headers.append(self.model.headerData(col, Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole))
-
-        # with open(PATH, "w", encoding="UTF-8", newline="") as file:
-        #     writer = csv.writer(file)
-        #     writer.writerow(headers)
-        #     for rowNumber in range(self.model.rowCount()):
-        #         fields = [
-        #             self.model.data(
-        #                 self.model.index(rowNumber, columnNumber), Qt.ItemDataRole.DisplayRole
-        #             )
-        #             for columnNumber in range(self.model.columnCount())
-        #         ]
-        #         writer.writerow(fields)
-
-        # QMessageBox.information(self, "Экспорт завершён", f"Файл был успешно сохранён в '{PATH}'.")
 
     @pyqtSlot()
     def refresh(self, filter=True):

@@ -32,15 +32,11 @@ class MainWindow(QMainWindow, WidgetMixin):
             self.reservations,
         ]
         
-        with Session(ENGINE) as session:
-            data = session.exec(select(Club)).all()
-        
         self.schedule = QTableView(self)
-        self.model = ScheduleTableModel(data)
-        self.schedule.setModel(self.model)
         self.schedule.setWordWrap(True)
         self.schedule.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.schedule.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        self.refresh_schedule()
         self.pushButton.clicked.connect(lambda: export(self.model, self, True))
 
         self.desktopLayout.addWidget(self.desktop)
@@ -51,11 +47,15 @@ class MainWindow(QMainWindow, WidgetMixin):
         self.locationsLayout.addWidget(self.reservations)
 
         self.tabWidget.currentChanged.connect(self.refresh_current_tab)
+        self.tabWidget_2.currentChanged.connect(self.refresh_schedule)
         self.refresh_current_tab(self.tabWidget.currentIndex())
 
     @pyqtSlot(int)
     def refresh_current_tab(self, index: int) -> None:
         self.views[index].refresh()
 
+    def refresh_schedule(self) -> None:
+        with Session(ENGINE) as session:
+            self.schedule.setModel(ScheduleTableModel(session.exec(select(Club)).all()))
 
 __all__ = ["MainWindow"]
