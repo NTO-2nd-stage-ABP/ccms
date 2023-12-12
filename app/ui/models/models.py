@@ -212,6 +212,8 @@ class ScheduleTableModel(QAbstractTableModel):
         weekday = Weekday(index.column() + 1)
         with Session(ENGINE) as session:
             club: Club | None = session.get(Club, self._data[index.row()].id)
+            if club is None:
+                return
             schedule_day = next((d for d in club.days if d.weekday == weekday), None)
             if not schedule_day:
                 return
